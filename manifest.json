@@ -2,9 +2,9 @@
   "name": "Asset Manager Pro - Quản lý Tài sản",
   "short_name": "Asset Manager",
   "description": "Hệ thống quản lý và kiểm kê tài sản chuyên nghiệp với QR Code",
-  "start_url": "/index.html",
+  "start_url": "/",
   "display": "standalone",
-  "background_color": "#4F46E5",
+  "background_color": "#ffffff",
   "theme_color": "#4F46E5",
   "orientation": "portrait",
   "icons": [
@@ -22,23 +22,36 @@
     }
   ],
   "categories": ["business", "productivity"],
-  "lang": "vi-VN",
+  "lang": "vi",
   "dir": "ltr",
   "scope": "/",
+  "prefer_related_applications": false,
   "shortcuts": [
     {
       "name": "Quét QR",
       "short_name": "Quét",
-      "description": "Mở máy quét QR Code",
-      "url": "/index.html#scanner",
-      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+      "description": "Quét mã QR tài sản",
+      "url": "/?tab=scan",
+      "icons": [
+        {
+          "src": "scan-icon.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
     },
     {
       "name": "Báo cáo",
       "short_name": "Báo cáo",
       "description": "Xem báo cáo kiểm kê",
-      "url": "/index.html#reports",
-      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+      "url": "/?tab=report",
+      "icons": [
+        {
+          "src": "report-icon.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
     }
   ]
 }
