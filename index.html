@@ -9,34 +9,38 @@
     <!-- PWA Meta Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="manifest" href="manifest.json">
-    
-    <!-- Icons -->
-    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-    <link rel="apple-touch-icon" href="icon-192.png">
+    <meta name="description" content="Hệ thống quản lý và kiểm kê tài sản chuyên nghiệp">
     
     <!-- QR Scanner Library -->
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     
+    <!-- Chart.js for Statistics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
 
         :root {
             --primary: #4F46E5;
             --primary-dark: #4338CA;
+            --primary-light: #818CF8;
             --secondary: #10B981;
             --danger: #EF4444;
             --warning: #F59E0B;
+            --info: #3B82F6;
             --dark: #1F2937;
             --gray: #6B7280;
             --light: #F3F4F6;
             --white: #FFFFFF;
             --shadow: 0 1px 3px rgba(0,0,0,0.12);
-            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.15);
+            --radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         body {
@@ -44,2681 +48,869 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             color: var(--dark);
+            overflow-x: hidden;
         }
 
-        .app-container {
-            max-width: 100%;
+        /* Container */
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
             min-height: 100vh;
             background: var(--white);
-        }
-
-        .header {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            color: white;
-            padding: 1rem;
-            box-shadow: var(--shadow-lg);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .header-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 1.25rem;
-            font-weight: bold;
-        }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.875rem;
-        }
-
-        .nav-tabs {
-            display: flex;
-            background: var(--white);
-            border-bottom: 1px solid var(--light);
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .nav-tab {
-            flex: 1;
-            padding: 1rem;
-            text-align: center;
-            border: none;
-            background: none;
-            color: var(--gray);
-            font-size: 0.875rem;
-            cursor: pointer;
             position: relative;
-            white-space: nowrap;
-            transition: all 0.3s ease;
-        }
-
-        .nav-tab.active {
-            color: var(--primary);
-            font-weight: 600;
-        }
-
-        .nav-tab.active::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: var(--primary);
-            animation: slideIn 0.3s ease;
-        }
-
-        @keyframes slideIn {
-            from { transform: translateX(-100%); }
-            to { transform: translateX(0); }
-        }
-
-        .tab-panel {
-            display: none;
-            padding: 1rem;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .tab-panel.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .scanner-container {
-            background: var(--white);
-            border-radius: 1rem;
-            padding: 1.5rem;
-            margin-bottom: 1rem;
-            box-shadow: var(--shadow);
-        }
-
-        #qr-reader {
-            border-radius: 0.5rem;
-            overflow: hidden;
-            margin-bottom: 1rem;
-        }
-
-        .scan-button {
-            width: 100%;
-            padding: 1rem;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            color: white;
-            border: none;
-            border-radius: 0.75rem;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-        }
-
-        .scan-button:active {
-            transform: scale(0.98);
-        }
-
-        .scan-button.scanning {
-            background: linear-gradient(135deg, var(--danger) 0%, #DC2626 100%);
-        }
-
-        .asset-card {
-            background: var(--white);
-            border-radius: 1rem;
-            padding: 1.5rem;
-            margin-bottom: 1rem;
-            box-shadow: var(--shadow);
-            transition: transform 0.2s ease;
-        }
-
-        .asset-card:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-lg);
-        }
-
-        .asset-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: start;
-            margin-bottom: 1rem;
-        }
-
-        .asset-code {
-            font-size: 1.25rem;
-            font-weight: bold;
-            color: var(--primary);
-        }
-
-        .asset-status {
-            padding: 0.25rem 0.75rem;
-            border-radius: 1rem;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-
-        .status-checked {
-            background: #D1FAE5;
-            color: #065F46;
-        }
-
-        .status-pending {
-            background: #FEE2E2;
-            color: #991B1B;
-        }
-
-        .asset-details {
-            display: grid;
-            gap: 0.75rem;
-        }
-
-        .detail-row {
-            display: flex;
-            gap: 0.5rem;
-            font-size: 0.875rem;
-        }
-
-        .detail-label {
-            color: var(--gray);
-            min-width: 100px;
-        }
-
-        .detail-value {
-            color: var(--dark);
-            font-weight: 500;
-        }
-
-        .action-buttons {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0.75rem;
-            margin-top: 1rem;
-        }
-
-        .btn {
-            padding: 0.75rem;
-            border: none;
-            border-radius: 0.5rem;
-            font-size: 0.875rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-        }
-
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: var(--primary-dark);
-        }
-
-        .btn-success {
-            background: var(--secondary);
-            color: white;
-        }
-
-        .btn-outline {
-            background: transparent;
-            color: var(--primary);
-            border: 2px solid var(--primary);
-        }
-
-        .btn-outline:hover {
-            background: var(--primary);
-            color: white;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1rem;
-            margin-bottom: 2rem;
-        }
-
-        .stat-card {
-            background: linear-gradient(135deg, var(--white) 0%, var(--light) 100%);
-            border-radius: 1rem;
-            padding: 1.25rem;
-            box-shadow: var(--shadow);
-        }
-
-        .stat-label {
-            color: var(--gray);
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            margin-bottom: 0.5rem;
-        }
-
-        .stat-value {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: var(--dark);
-        }
-
-        .stat-progress {
-            margin-top: 0.75rem;
-        }
-
-        .progress-bar {
-            height: 8px;
-            background: var(--light);
-            border-radius: 4px;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
-            border-radius: 4px;
-            transition: width 0.3s ease;
-        }
-
-        .search-container {
-            position: relative;
-            margin-bottom: 1rem;
-        }
-
-        .search-input {
-            width: 100%;
-            padding: 0.875rem 3rem 0.875rem 1rem;
-            border: 2px solid var(--light);
-            border-radius: 0.75rem;
-            font-size: 1rem;
-            transition: border-color 0.2s ease;
-        }
-
-        .search-input:focus {
-            outline: none;
-            border-color: var(--primary);
-        }
-
-        .search-icon {
-            position: absolute;
-            right: 1rem;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--gray);
-        }
-
-        .results-list {
-            max-height: 400px;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .result-item {
-            padding: 1rem;
-            border-bottom: 1px solid var(--light);
-            cursor: pointer;
-            transition: background 0.2s ease;
-        }
-
-        .result-item:hover {
-            background: var(--light);
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            animation: fadeIn 0.2s ease;
-        }
-
-        .modal.active {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-content {
-            background: white;
-            border-radius: 1rem;
-            padding: 1.5rem;
-            width: 90%;
-            max-width: 500px;
-            max-height: 80vh;
-            overflow-y: auto;
-            animation: slideUp 0.3s ease;
-        }
-
-        @keyframes slideUp {
-            from { transform: translateY(100px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-
-        .modal-title {
-            font-size: 1.25rem;
-            font-weight: bold;
-            color: var(--dark);
-        }
-
-        .close-btn {
-            width: 32px;
-            height: 32px;
-            border: none;
-            background: var(--light);
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.2s ease;
-        }
-
-        .close-btn:hover {
-            background: var(--danger);
-            color: white;
-        }
-
-        .form-group {
-            margin-bottom: 1rem;
-        }
-
-        .form-label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: var(--dark);
-            font-size: 0.875rem;
-            font-weight: 600;
-        }
-
-        .form-input,
-        .form-textarea {
-            width: 100%;
-            padding: 0.75rem;
-            border: 2px solid var(--light);
-            border-radius: 0.5rem;
-            font-size: 1rem;
-            transition: border-color 0.2s ease;
-        }
-
-        .form-input:focus,
-        .form-textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-        }
-
-        .form-textarea {
-            resize: vertical;
-            min-height: 100px;
-        }
-
-        .toast {
-            position: fixed;
-            bottom: -100px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--dark);
-            color: white;
-            padding: 1rem 1.5rem;
-            border-radius: 0.5rem;
-            box-shadow: var(--shadow-lg);
-            z-index: 2000;
-            transition: bottom 0.3s ease;
-            max-width: 90%;
-        }
-
-        .toast.show {
-            bottom: 20px;
-        }
-
-        .toast.success {
-            background: var(--secondary);
-        }
-
-        .toast.error {
-            background: var(--danger);
-        }
-
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid var(--light);
-            border-top-color: var(--primary);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 2rem auto;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 3rem 1rem;
-        }
-
-        .empty-icon {
-            width: 100px;
-            height: 100px;
-            margin: 0 auto 1rem;
-            opacity: 0.5;
-        }
-
-        .empty-text {
-            color: var(--gray);
-            font-size: 1rem;
-        }
-
-        @media (min-width: 768px) {
-            .app-container {
-                max-width: 768px;
-                margin: 0 auto;
-            }
-
-            .stats-grid {
-                grid-template-columns: repeat(4, 1fr);
-            }
-
-            .action-buttons {
-                grid-template-columns: repeat(3, 1fr);
-            }
-        }
-
-        .install-prompt {
-            display: none;
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: var(--primary);
-            color: white;
-            padding: 1rem 1.5rem;
-            border-radius: 2rem;
-            box-shadow: var(--shadow-lg);
-            cursor: pointer;
-            z-index: 900;
-            animation: slideInRight 0.3s ease;
-        }
-
-        @keyframes slideInRight {
-            from { transform: translateX(100%); }
-            to { transform: translateX(0); }
-        }
-
-        .offline-banner {
-            display: none;
-            background: var(--warning);
-            color: white;
-            text-align: center;
-            padding: 0.5rem;
-            font-size: 0.875rem;
-        }
-
-        .offline-banner.show {
-            display: block;
-        }
-    </style>
-    
-    <script>
-        // Register Service Worker
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/service-worker.js')
-                    .then(registration => {
-                        console.log('ServiceWorker registered:', registration);
-                    })
-                    .catch(error => {
-                        console.log('ServiceWorker registration failed:', error);
-                    });
-            });
-        }
-    </script>
-</head>
-<body>
-    <div class="app-container">
-        <!-- Offline Banner -->
-        <div class="offline-banner" id="offlineBanner">
-            📶 Đang làm việc offline - Dữ liệu sẽ đồng bộ khi có kết nối
-        </div>
-
-        <!-- Header -->
-        <header class="header">
-            <div class="header-content">
-                <div class="logo">
-                    <span>📦</span>
-                    <span>Asset Manager Pro</span>
-                </div>
-                <div class="user-info">
-                    <span id="userName">User</span>
-                    <span id="currentTime"></span>
-                </div>
-            </div>
-        </header>
-
-        <!-- Navigation Tabs -->
-        <nav class="nav-tabs">
-            <button class="nav-tab active" data-tab="scanner">
-                📷 Quét QR
-            </button>
-            <button class="nav-tab" data-tab="dashboard">
-                📊 Tổng quan
-            </button>
-            <button class="nav-tab" data-tab="search">
-                🔍 Tìm kiếm
-            </button>
-            <button class="nav-tab" data-tab="reports">
-                📈 Báo cáo
-            </button>
-            <button class="nav-tab" data-tab="settings">
-                ⚙️ Cài đặt
-            </button>
-        </nav>
-
-        <!-- Tab Panels -->
-        <main>
-            <!-- Scanner Tab -->
-            <div class="tab-panel active" id="scanner-panel">
-                <div class="scanner-container">
-                    <div id="qr-reader"></div>
-                    <button class="scan-button" id="scanBtn">
-                        <span>📷</span>
-                        <span>Bắt đầu quét QR Code</span>
-                    </button>
-                </div>
-
-                <!-- Last Scanned Assets -->
-                <div id="recentScans">
-                    <h3 style="margin-bottom: 1rem; color: var(--dark);">Vừa kiểm kê</h3>
-                    <div id="recentScansList"></div>
-                </div>
-            </div>
-
-            <!-- Dashboard Tab -->
-            <div class="tab-panel" id="dashboard-panel">
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-label">Tổng tài sản</div>
-                        <div class="stat-value" id="totalAssets">0</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">Đã kiểm kê</div>
-                        <div class="stat-value" id="checkedAssets">0</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">Chưa kiểm kê</div>
-                        <div class="stat-value" id="pendingAssets">0</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">Tiến độ</div>
-                        <div class="stat-value" id="progressPercent">0%</div>
-                        <div class="stat-progress">
-                            <div class="progress-bar">
-                                <div class="progress-fill" id="progressBar" style="width: 0%"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <h3 style="margin-bottom: 1rem;">Hoạt động gần đây</h3>
-                <div id="recentActivities"></div>
-            </div>
-
-            <!-- Search Tab -->
-            <div class="tab-panel" id="search-panel">
-                <div class="search-container">
-                    <input type="text" class="search-input" id="searchInput" 
-                           placeholder="Nhập mã tài sản, tên, hoặc vị trí...">
-                    <span class="search-icon">🔍</span>
-                </div>
-                <div class="results-list" id="searchResults"></div>
-            </div>
-
-            <!-- Reports Tab -->
-            <div class="tab-panel" id="reports-panel">
-                <div class="asset-card">
-                    <h3>Báo cáo kiểm kê</h3>
-                    <p style="color: var(--gray); margin: 1rem 0;">
-                        Kỳ kiểm kê: <strong id="currentPeriod">11/2025</strong>
-                    </p>
-                    <div class="action-buttons">
-                        <button class="btn btn-primary" onclick="app.exportReport()">
-                            📥 Xuất báo cáo
-                        </button>
-                        <button class="btn btn-outline" onclick="app.printQRCodes()">
-                            🖨️ In mã QR
-                        </button>
-                        <button class="btn btn-outline" onclick="app.resetInventory()">
-                            🔄 Reset kỳ mới
-                        </button>
-                    </div>
-                </div>
-
-                <div style="margin-top: 1rem;">
-                    <canvas id="chartCanvas" width="400" height="200"></canvas>
-                </div>
-            </div>
-
-            <!-- Settings Tab -->
-            <div class="tab-panel" id="settings-panel">
-                <div class="asset-card">
-                    <h3>Cài đặt</h3>
-                    
-                    <div class="form-group">
-                        <label class="form-label">API URL (Google Apps Script)</label>
-                        <input type="text" class="form-input" id="apiUrl" 
-                               placeholder="https://script.google.com/macros/s/...">
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Tên người kiểm kê</label>
-                        <input type="text" class="form-input" id="userNameInput" 
-                               placeholder="Nhập tên của bạn">
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Chi nhánh/Kho</label>
-                        <select class="form-input" id="locationSelect">
-                            <option value="Văn phòng">Văn phòng</option>
-                            <option value="Kho 1">Kho 1</option>
-                            <option value="Kho 2">Kho 2</option>
-                            <option value="Xưởng sản xuất">Xưởng sản xuất</option>
-                        </select>
-                    </div>
-
-                    <button class="btn btn-primary" onclick="app.saveSettings()">
-                        💾 Lưu cài đặt
-                    </button>
-                </div>
-
-                <div class="asset-card" style="margin-top: 1rem;">
-                    <h3>Thông tin hệ thống</h3>
-                    <div class="detail-row">
-                        <span class="detail-label">Phiên bản:</span>
-                        <span class="detail-value">1.0.0</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Trạng thái:</span>
-                        <span class="detail-value" id="connectionStatus">Online</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Cache:</span>
-                        <span class="detail-value" id="cacheSize">0 KB</span>
-                    </div>
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <!-- Asset Detail Modal -->
-    <div class="modal" id="assetModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title">Chi tiết tài sản</h2>
-                <button class="close-btn" onclick="app.closeModal()">✕</button>
-            </div>
-            <div id="assetModalContent"></div>
-        </div>
-    </div>
-
-    <!-- Toast Notification -->
-    <div class="toast" id="toast"></div>
-
-    <!-- Install Prompt -->
-    <div class="install-prompt" id="installPrompt" onclick="app.installPWA()">
-        📲 Cài đặt ứng dụng
-    </div>
-
-    <script>
-        // ===================================
-        // ASSET MANAGEMENT APP
-        // ===================================
-        
-        class AssetManagementApp {
-            constructor() {
-                this.apiUrl = localStorage.getItem('apiUrl') || '';
-                this.userName = localStorage.getItem('userName') || 'User';
-                this.location = localStorage.getItem('location') || 'Văn phòng';
-                this.scanner = null;
-                this.isScanning = false;
-                this.recentScans = [];
-                this.offlineQueue = [];
-                
-                this.init();
-            }
-
-            init() {
-                // Initialize UI
-                this.setupTabs();
-                this.loadSettings();
-                this.updateTime();
-                this.checkOnlineStatus();
-                this.loadDashboard();
-                
-                // Setup PWA
-                this.setupPWA();
-                
-                // Setup search
-                this.setupSearch();
-                
-                // Update time every second
-                setInterval(() => this.updateTime(), 1000);
-                
-                // Check online status
-                window.addEventListener('online', () => this.onOnline());
-                window.addEventListener('offline', () => this.onOffline());
-            }
-
-            // ===================================
-            // UI SETUP
-            // ===================================
-            
-            setupTabs() {
-                const tabs = document.querySelectorAll('.nav-tab');
-                tabs.forEach(tab => {
-                    tab.addEventListener('click', () => {
-                        // Remove active from all tabs and panels
-                        tabs.forEach(t => t.classList.remove('active'));
-                        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-                        
-                        // Add active to clicked tab and corresponding panel
-                        tab.classList.add('active');
-                        const panelId = tab.dataset.tab + '-panel';
-                        document.getElementById(panelId).classList.add('active');
-                        
-                        // Stop scanner when switching tabs
-                        if (tab.dataset.tab !== 'scanner' && this.isScanning) {
-                            this.stopScanner();
-                        }
-                    });
-                });
-                
-                // Setup scan button
-                document.getElementById('scanBtn').addEventListener('click', () => {
-                    this.toggleScanner();
-                });
-            }
-
-            updateTime() {
-                const now = new Date();
-                document.getElementById('currentTime').textContent = 
-                    now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
-            }
-
-            // ===================================
-            // QR SCANNER
-            // ===================================
-            
-            async toggleScanner() {
-                if (this.isScanning) {
-                    this.stopScanner();
-                } else {
-                    this.startScanner();
-                }
-            }
-
-            startScanner() {
-                const scanBtn = document.getElementById('scanBtn');
-                scanBtn.classList.add('scanning');
-                scanBtn.innerHTML = '<span>⏹️</span><span>Dừng quét</span>';
-                
-                this.scanner = new Html5QrcodeScanner("qr-reader", {
-                    fps: 10,
-                    qrbox: { width: 250, height: 250 },
-                    aspectRatio: 1.0,
-                    showTorchButtonIfSupported: true,
-                    rememberLastUsedCamera: true
-                });
-                
-                this.scanner.render(
-                    (decodedText) => this.onScanSuccess(decodedText),
-                    (error) => console.log(error)
-                );
-                
-                this.isScanning = true;
-            }
-
-            stopScanner() {
-                if (this.scanner) {
-                    this.scanner.clear();
-                    this.scanner = null;
-                }
-                
-                const scanBtn = document.getElementById('scanBtn');
-                scanBtn.classList.remove('scanning');
-                scanBtn.innerHTML = '<span>📷</span><span>Bắt đầu quét QR Code</span>';
-                
-                this.isScanning = false;
-            }
-
-            async onScanSuccess(assetCode) {
-                // Vibrate if supported
-                if (navigator.vibrate) {
-                    navigator.vibrate(200);
-                }
-                
-                // Check if already scanned recently (prevent double scan)
-                if (this.recentScans.some(s => s.code === assetCode && 
-                    (Date.now() - s.timestamp) < 5000)) {
-                    this.showToast('Tài sản này vừa được quét!', 'error');
-                    return;
-                }
-                
-                // Show loading
-                this.showToast('Đang xử lý...', 'info');
-                
-                // Get asset details and update inventory
-                try {
-                    const asset = await this.getAsset(assetCode);
-                    if (asset) {
-                        await this.updateInventory(asset);
-                        this.showAssetModal(asset);
-                    } else {
-                        this.showToast('Không tìm thấy tài sản!', 'error');
-                    }
-                } catch (error) {
-                    console.error(error);
-                    this.showToast('Lỗi: ' + error.message, 'error');
-                }
-            }
-
-           <!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#4F46E5">
-    <title>Asset Manager Pro - Quản lý Tài sản</title>
-    
-    <!-- PWA Meta Tags -->
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="manifest" href="manifest.json">
-    
-    <!-- Icons -->
-    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-    <link rel="apple-touch-icon" href="icon-192.png">
-    
-    <!-- QR Scanner Library -->
-    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-    
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --primary: #4F46E5;
-            --primary-dark: #4338CA;
-            --secondary: #10B981;
-            --danger: #EF4444;
-            --warning: #F59E0B;
-            --dark: #1F2937;
-            --gray: #6B7280;
-            --light: #F3F4F6;
-            --white: #FFFFFF;
-            --shadow: 0 1px 3px rgba(0,0,0,0.12);
-            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            color: var(--dark);
-        }
-
-        .app-container {
-            max-width: 100%;
-            min-height: 100vh;
-            background: var(--white);
-        }
-
-        .header {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            color: white;
-            padding: 1rem;
-            box-shadow: var(--shadow-lg);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .header-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 1.25rem;
-            font-weight: bold;
-        }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.875rem;
-        }
-
-        .nav-tabs {
-            display: flex;
-            background: var(--white);
-            border-bottom: 1px solid var(--light);
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .nav-tab {
-            flex: 1;
-            padding: 1rem;
-            text-align: center;
-            border: none;
-            background: none;
-            color: var(--gray);
-            font-size: 0.875rem;
-            cursor: pointer;
-            position: relative;
-            white-space: nowrap;
-            transition: all 0.3s ease;
-        }
-
-        .nav-tab.active {
-            color: var(--primary);
-            font-weight: 600;
-        }
-
-        .nav-tab.active::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: var(--primary);
-            animation: slideIn 0.3s ease;
-        }
-
-        @keyframes slideIn {
-            from { transform: translateX(-100%); }
-            to { transform: translateX(0); }
-        }
-
-        .tab-panel {
-            display: none;
-            padding: 1rem;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .tab-panel.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .scanner-container {
-            background: var(--white);
-            border-radius: 1rem;
-            padding: 1.5rem;
-            margin-bottom: 1rem;
-            box-shadow: var(--shadow);
-        }
-
-        #qr-reader {
-            border-radius: 0.5rem;
-            overflow: hidden;
-            margin-bottom: 1rem;
-        }
-
-        .scan-button {
-            width: 100%;
-            padding: 1rem;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            color: white;
-            border: none;
-            border-radius: 0.75rem;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-        }
-
-        .scan-button:active {
-            transform: scale(0.98);
-        }
-
-        .scan-button.scanning {
-            background: linear-gradient(135deg, var(--danger) 0%, #DC2626 100%);
-        }
-
-        .asset-card {
-            background: var(--white);
-            border-radius: 1rem;
-            padding: 1.5rem;
-            margin-bottom: 1rem;
-            box-shadow: var(--shadow);
-            transition: transform 0.2s ease;
-        }
-
-        .asset-card:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-lg);
-        }
-
-        .asset-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: start;
-            margin-bottom: 1rem;
-        }
-
-        .asset-code {
-            font-size: 1.25rem;
-            font-weight: bold;
-            color: var(--primary);
-        }
-
-        .asset-status {
-            padding: 0.25rem 0.75rem;
-            border-radius: 1rem;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-
-        .status-checked {
-            background: #D1FAE5;
-            color: #065F46;
-        }
-
-        .status-pending {
-            background: #FEE2E2;
-            color: #991B1B;
-        }
-
-        .asset-details {
-            display: grid;
-            gap: 0.75rem;
-        }
-
-        .detail-row {
-            display: flex;
-            gap: 0.5rem;
-            font-size: 0.875rem;
-        }
-
-        .detail-label {
-            color: var(--gray);
-            min-width: 100px;
-        }
-
-        .detail-value {
-            color: var(--dark);
-            font-weight: 500;
-        }
-
-        .action-buttons {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0.75rem;
-            margin-top: 1rem;
-        }
-
-        .btn {
-            padding: 0.75rem;
-            border: none;
-            border-radius: 0.5rem;
-            font-size: 0.875rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-        }
-
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: var(--primary-dark);
-        }
-
-        .btn-success {
-            background: var(--secondary);
-            color: white;
-        }
-
-        .btn-outline {
-            background: transparent;
-            color: var(--primary);
-            border: 2px solid var(--primary);
-        }
-
-        .btn-outline:hover {
-            background: var(--primary);
-            color: white;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1rem;
-            margin-bottom: 2rem;
-        }
-
-        .stat-card {
-            background: linear-gradient(135deg, var(--white) 0%, var(--light) 100%);
-            border-radius: 1rem;
-            padding: 1.25rem;
-            box-shadow: var(--shadow);
-        }
-
-        .stat-label {
-            color: var(--gray);
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            margin-bottom: 0.5rem;
-        }
-
-        .stat-value {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: var(--dark);
-        }
-
-        .stat-progress {
-            margin-top: 0.75rem;
-        }
-
-        .progress-bar {
-            height: 8px;
-            background: var(--light);
-            border-radius: 4px;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
-            border-radius: 4px;
-            transition: width 0.3s ease;
-        }
-
-        .search-container {
-            position: relative;
-            margin-bottom: 1rem;
-        }
-
-        .search-input {
-            width: 100%;
-            padding: 0.875rem 3rem 0.875rem 1rem;
-            border: 2px solid var(--light);
-            border-radius: 0.75rem;
-            font-size: 1rem;
-            transition: border-color 0.2s ease;
-        }
-
-        .search-input:focus {
-            outline: none;
-            border-color: var(--primary);
-        }
-
-        .search-icon {
-            position: absolute;
-            right: 1rem;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--gray);
-        }
-
-        .results-list {
-            max-height: 400px;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .result-item {
-            padding: 1rem;
-            border-bottom: 1px solid var(--light);
-            cursor: pointer;
-            transition: background 0.2s ease;
-        }
-
-        .result-item:hover {
-            background: var(--light);
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            animation: fadeIn 0.2s ease;
-        }
-
-        .modal.active {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-content {
-            background: white;
-            border-radius: 1rem;
-            padding: 1.5rem;
-            width: 90%;
-            max-width: 500px;
-            max-height: 80vh;
-            overflow-y: auto;
-            animation: slideUp 0.3s ease;
-        }
-
-        @keyframes slideUp {
-            from { transform: translateY(100px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-
-        .modal-title {
-            font-size: 1.25rem;
-            font-weight: bold;
-            color: var(--dark);
-        }
-
-        .close-btn {
-            width: 32px;
-            height: 32px;
-            border: none;
-            background: var(--light);
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.2s ease;
-        }
-
-        .close-btn:hover {
-            background: var(--danger);
-            color: white;
-        }
-
-        .form-group {
-            margin-bottom: 1rem;
-        }
-
-        .form-label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: var(--dark);
-            font-size: 0.875rem;
-            font-weight: 600;
-        }
-
-        .form-input,
-        .form-textarea {
-            width: 100%;
-            padding: 0.75rem;
-            border: 2px solid var(--light);
-            border-radius: 0.5rem;
-            font-size: 1rem;
-            transition: border-color 0.2s ease;
-        }
-
-        .form-input:focus,
-        .form-textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-        }
-
-        .form-textarea {
-            resize: vertical;
-            min-height: 100px;
-        }
-
-        .toast {
-            position: fixed;
-            bottom: -100px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--dark);
-            color: white;
-            padding: 1rem 1.5rem;
-            border-radius: 0.5rem;
-            box-shadow: var(--shadow-lg);
-            z-index: 2000;
-            transition: bottom 0.3s ease;
-            max-width: 90%;
-        }
-
-        .toast.show {
-            bottom: 20px;
-        }
-
-        .toast.success {
-            background: var(--secondary);
-        }
-
-        .toast.error {
-            background: var(--danger);
-        }
-
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid var(--light);
-            border-top-color: var(--primary);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 2rem auto;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 3rem 1rem;
-        }
-
-        .empty-icon {
-            width: 100px;
-            height: 100px;
-            margin: 0 auto 1rem;
-            opacity: 0.5;
-        }
-
-        .empty-text {
-            color: var(--gray);
-            font-size: 1rem;
-        }
-
-        @media (min-width: 768px) {
-            .app-container {
-                max-width: 768px;
-                margin: 0 auto;
-            }
-
-            .stats-grid {
-                grid-template-columns: repeat(4, 1fr);
-            }
-
-            .action-buttons {
-                grid-template-columns: repeat(3, 1fr);
-            }
-        }
-
-        .install-prompt {
-            display: none;
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: var(--primary);
-            color: white;
-            padding: 1rem 1.5rem;
-            border-radius: 2rem;
-            box-shadow: var(--shadow-lg);
-            cursor: pointer;
-            z-index: 900;
-            animation: slideInRight 0.3s ease;
-        }
-
-        @keyframes slideInRight {
-            from { transform: translateX(100%); }
-            to { transform: translateX(0); }
-        }
-
-        .offline-banner {
-            display: none;
-            background: var(--warning);
-            color: white;
-            text-align: center;
-            padding: 0.5rem;
-            font-size: 0.875rem;
-        }
-
-        .offline-banner.show {
-            display: block;
-        }
-    </style>
-    
-    <script>
-        // Register Service Worker
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/service-worker.js')
-                    .then(registration => {
-                        console.log('ServiceWorker registered:', registration);
-                    })
-                    .catch(error => {
-                        console.log('ServiceWorker registration failed:', error);
-                    });
-            });
-        }
-    </script>
-</head>
-<body>
-    <div class="app-container">
-        <!-- Offline Banner -->
-        <div class="offline-banner" id="offlineBanner">
-            📶 Đang làm việc offline - Dữ liệu sẽ đồng bộ khi có kết nối
-        </div>
-
-        <!-- Header -->
-        <header class="header">
-            <div class="header-content">
-                <div class="logo">
-                    <span>📦</span>
-                    <span>Asset Manager Pro</span>
-                </div>
-                <div class="user-info">
-                    <span id="userName">User</span>
-                    <span id="currentTime"></span>
-                </div>
-            </div>
-        </header>
-
-        <!-- Navigation Tabs -->
-        <nav class="nav-tabs">
-            <button class="nav-tab active" data-tab="scanner">
-                📷 Quét QR
-            </button>
-            <button class="nav-tab" data-tab="dashboard">
-                📊 Tổng quan
-            </button>
-            <button class="nav-tab" data-tab="search">
-                🔍 Tìm kiếm
-            </button>
-            <button class="nav-tab" data-tab="reports">
-                📈 Báo cáo
-            </button>
-            <button class="nav-tab" data-tab="settings">
-                ⚙️ Cài đặt
-            </button>
-        </nav>
-
-        <!-- Tab Panels -->
-        <main>
-            <!-- Scanner Tab -->
-            <div class="tab-panel active" id="scanner-panel">
-                <div class="scanner-container">
-                    <div id="qr-reader"></div>
-                    <button class="scan-button" id="scanBtn">
-                        <span>📷</span>
-                        <span>Bắt đầu quét QR Code</span>
-                    </button>
-                </div>
-
-                <!-- Last Scanned Assets -->
-                <div id="recentScans">
-                    <h3 style="margin-bottom: 1rem; color: var(--dark);">Vừa kiểm kê</h3>
-                    <div id="recentScansList"></div>
-                </div>
-            </div>
-
-            <!-- Dashboard Tab -->
-            <div class="tab-panel" id="dashboard-panel">
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-label">Tổng tài sản</div>
-                        <div class="stat-value" id="totalAssets">0</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">Đã kiểm kê</div>
-                        <div class="stat-value" id="checkedAssets">0</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">Chưa kiểm kê</div>
-                        <div class="stat-value" id="pendingAssets">0</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">Tiến độ</div>
-                        <div class="stat-value" id="progressPercent">0%</div>
-                        <div class="stat-progress">
-                            <div class="progress-bar">
-                                <div class="progress-fill" id="progressBar" style="width: 0%"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <h3 style="margin-bottom: 1rem;">Hoạt động gần đây</h3>
-                <div id="recentActivities"></div>
-            </div>
-
-            <!-- Search Tab -->
-            <div class="tab-panel" id="search-panel">
-                <div class="search-container">
-                    <input type="text" class="search-input" id="searchInput" 
-                           placeholder="Nhập mã tài sản, tên, hoặc vị trí...">
-                    <span class="search-icon">🔍</span>
-                </div>
-                <div class="results-list" id="searchResults"></div>
-            </div>
-
-            <!-- Reports Tab -->
-            <div class="tab-panel" id="reports-panel">
-                <div class="asset-card">
-                    <h3>Báo cáo kiểm kê</h3>
-                    <p style="color: var(--gray); margin: 1rem 0;">
-                        Kỳ kiểm kê: <strong id="currentPeriod">11/2025</strong>
-                    </p>
-                    <div class="action-buttons">
-                        <button class="btn btn-primary" onclick="app.exportReport()">
-                            📥 Xuất báo cáo
-                        </button>
-                        <button class="btn btn-outline" onclick="app.printQRCodes()">
-                            🖨️ In mã QR
-                        </button>
-                        <button class="btn btn-outline" onclick="app.resetInventory()">
-                            🔄 Reset kỳ mới
-                        </button>
-                    </div>
-                </div>
-
-                <div style="margin-top: 1rem;">
-                    <canvas id="chartCanvas" width="400" height="200"></canvas>
-                </div>
-            </div>
-
-            <!-- Settings Tab -->
-            <div class="tab-panel" id="settings-panel">
-                <div class="asset-card">
-                    <h3>Cài đặt</h3>
-                    
-                    <div class="form-group">
-                        <label class="form-label">API URL (Google Apps Script)</label>
-                        <input type="text" class="form-input" id="apiUrl" 
-                               placeholder="https://script.google.com/macros/s/...">
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Tên người kiểm kê</label>
-                        <input type="text" class="form-input" id="userNameInput" 
-                               placeholder="Nhập tên của bạn">
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Chi nhánh/Kho</label>
-                        <select class="form-input" id="locationSelect">
-                            <option value="Văn phòng">Văn phòng</option>
-                            <option value="Kho 1">Kho 1</option>
-                            <option value="Kho 2">Kho 2</option>
-                            <option value="Xưởng sản xuất">Xưởng sản xuất</option>
-                        </select>
-                    </div>
-
-                    <button class="btn btn-primary" onclick="app.saveSettings()">
-                        💾 Lưu cài đặt
-                    </button>
-                </div>
-
-                <div class="asset-card" style="margin-top: 1rem;">
-                    <h3>Thông tin hệ thống</h3>
-                    <div class="detail-row">
-                        <span class="detail-label">Phiên bản:</span>
-                        <span class="detail-value">1.0.0</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Trạng thái:</span>
-                        <span class="detail-value" id="connectionStatus">Online</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Cache:</span>
-                        <span class="detail-value" id="cacheSize">0 KB</span>
-                    </div>
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <!-- Asset Detail Modal -->
-    <div class="modal" id="assetModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title">Chi tiết tài sản</h2>
-                <button class="close-btn" onclick="app.closeModal()">✕</button>
-            </div>
-            <div id="assetModalContent"></div>
-        </div>
-    </div>
-
-    <!-- Toast Notification -->
-    <div class="toast" id="toast"></div>
-
-    <!-- Install Prompt -->
-    <div class="install-prompt" id="installPrompt" onclick="app.installPWA()">
-        📲 Cài đặt ứng dụng
-    </div>
-
-    <script>
-        // ===================================
-        // ASSET MANAGEMENT APP
-        // ===================================
-        
-        class AssetManagementApp {
-            constructor() {
-                this.apiUrl = localStorage.getItem('apiUrl') || '';
-                this.userName = localStorage.getItem('userName') || 'User';
-                this.location = localStorage.getItem('location') || 'Văn phòng';
-                this.scanner = null;
-                this.isScanning = false;
-                this.recentScans = [];
-                this.offlineQueue = [];
-                
-                this.init();
-            }
-
-            init() {
-                // Initialize UI
-                this.setupTabs();
-                this.loadSettings();
-                this.updateTime();
-                this.checkOnlineStatus();
-                this.loadDashboard();
-                
-                // Setup PWA
-                this.setupPWA();
-                
-                // Setup search
-                this.setupSearch();
-                
-                // Update time every second
-                setInterval(() => this.updateTime(), 1000);
-                
-                // Check online status
-                window.addEventListener('online', () => this.onOnline());
-                window.addEventListener('offline', () => this.onOffline());
-            }
-
-            // ===================================
-            // UI SETUP
-            // ===================================
-            
-            setupTabs() {
-                const tabs = document.querySelectorAll('.nav-tab');
-                tabs.forEach(tab => {
-                    tab.addEventListener('click', () => {
-                        // Remove active from all tabs and panels
-                        tabs.forEach(t => t.classList.remove('active'));
-                        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-                        
-                        // Add active to clicked tab and corresponding panel
-                        tab.classList.add('active');
-                        const panelId = tab.dataset.tab + '-panel';
-                        document.getElementById(panelId).classList.add('active');
-                        
-                        // Stop scanner when switching tabs
-                        if (tab.dataset.tab !== 'scanner' && this.isScanning) {
-                            this.stopScanner();
-                        }
-                    });
-                });
-                
-                // Setup scan button
-                document.getElementById('scanBtn').addEventListener('click', () => {
-                    this.toggleScanner();
-                });
-            }
-
-            updateTime() {
-                const now = new Date();
-                document.getElementById('currentTime').textContent = 
-                    now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
-            }
-
-            // ===================================
-            // QR SCANNER
-            // ===================================
-            
-            async toggleScanner() {
-                if (this.isScanning) {
-                    this.stopScanner();
-                } else {
-                    this.startScanner();
-                }
-            }
-
-            startScanner() {
-                const scanBtn = document.getElementById('scanBtn');
-                scanBtn.classList.add('scanning');
-                scanBtn.innerHTML = '<span>⏹️</span><span>Dừng quét</span>';
-                
-                this.scanner = new Html5QrcodeScanner("qr-reader", {
-                    fps: 10,
-                    qrbox: { width: 250, height: 250 },
-                    aspectRatio: 1.0,
-                    showTorchButtonIfSupported: true,
-                    rememberLastUsedCamera: true
-                });
-                
-                this.scanner.render(
-                    (decodedText) => this.onScanSuccess(decodedText),
-                    (error) => console.log(error)
-                );
-                
-                this.isScanning = true;
-            }
-
-            stopScanner() {
-                if (this.scanner) {
-                    this.scanner.clear();
-                    this.scanner = null;
-                }
-                
-                const scanBtn = document.getElementById('scanBtn');
-                scanBtn.classList.remove('scanning');
-                scanBtn.innerHTML = '<span>📷</span><span>Bắt đầu quét QR Code</span>';
-                
-                this.isScanning = false;
-            }
-
-            async onScanSuccess(assetCode) {
-                // Vibrate if supported
-                if (navigator.vibrate) {
-                    navigator.vibrate(200);
-                }
-                
-                // Check if already scanned recently (prevent double scan)
-                if (this.recentScans.some(s => s.code === assetCode && 
-                    (Date.now() - s.timestamp) < 5000)) {
-                    this.showToast('Tài sản này vừa được quét!', 'error');
-                    return;
-                }
-                
-                // Show loading
-                this.showToast('Đang xử lý...', 'info');
-                
-                // Get asset details and update inventory
-                try {
-                    const asset = await this.getAsset(assetCode);
-                    if (asset) {
-                        await this.updateInventory(asset);
-                        this.showAssetModal(asset);
-                    } else {
-                        this.showToast('Không tìm thấy tài sản!', 'error');
-                    }
-                } catch (error) {
-                    console.error(error);
-                    this.showToast('Lỗi: ' + error.message, 'error');
-                }
-            }
-
-            // ===================================
-            // API CALLS
-            // ===================================
-            
-            async apiCall(action, data = {}) {
-                if (!this.apiUrl) {
-                    throw new Error('Chưa cấu hình API URL');
-                }
-                
-                const payload = {
-                    action: action,
-                    ...data
-                };
-                
-                try {
-                    const response = await fetch(this.apiUrl, {
-                        method: 'POST',
-                        body: JSON.stringify(payload),
-                        headers: {
-                            'Content-Type': 'application/json'
-                        }
-                    });
-                    
-                    const result = await response.json();
-                    if (!result.success) {
-                        throw new Error(result.error || 'API Error');
-                    }
-                    
-                    return result;
-                } catch (error) {
-                    // If offline, add to queue
-                    if (!navigator.onLine) {
-                        this.addToOfflineQueue(action, data);
-                        throw new Error('Offline - sẽ đồng bộ sau');
-                    }
-                    throw error;
-                }
-            }
-
-            async getAsset(code) {
-                const result = await this.apiCall('getAsset', { code });
-                return result.asset;
-            }
-
-            async updateInventory(asset) {
-                const data = {
-                    code: asset.Code,
-                    user: this.userName,
-                    location: this.location,
-                    notes: ''
-                };
-                
-                const result = await this.apiCall('updateInventory', data);
-                
-                if (result.success) {
-                    // Add to recent scans
-                    this.recentScans.unshift({
-                        code: asset.Code,
-                        name: asset['Tên tài sản Tiếng Việt'],
-                        timestamp: Date.now()
-                    });
-                    
-                    // Keep only last 10 scans
-                    this.recentScans = this.recentScans.slice(0, 10);
-                    
-                    // Update UI
-                    this.updateRecentScans();
-                    this.loadDashboard();
-                    
-                    this.showToast('✅ Đã kiểm kê thành công!', 'success');
-                } else if (result.duplicate) {
-                    this.showToast('⚠️ Tài sản đã được kiểm kê!', 'warning');
-                }
-                
-                return result;
-            }
-
-            async loadDashboard() {
-                try {
-                    const result = await this.apiCall('getDashboard');
-                    
-                    if (result.success) {
-                        // Update stats
-                        document.getElementById('totalAssets').textContent = result.summary.totalAssets;
-                        document.getElementById('checkedAssets').textContent = result.inventoryStatus.checked;
-                        document.getElementById('pendingAssets').textContent = result.inventoryStatus.pending;
-                        document.getElementById('progressPercent').textContent = result.inventoryStatus.percentage + '%';
-                        document.getElementById('progressBar').style.width = result.inventoryStatus.percentage + '%';
-                        
-                        // Update current period
-                        document.getElementById('currentPeriod').textContent = result.inventoryStatus.period;
-                    }
-                } catch (error) {
-                    console.error('Dashboard error:', error);
-                }
-            }
-
-            // ===================================
-            // UI UPDATES
-            // ===================================
-            
-            updateRecentScans() {
-                const container = document.getElementById('recentScansList');
-                if (this.recentScans.length === 0) {
-                    container.innerHTML = '<div class="empty-state"><p>Chưa có tài sản nào được quét</p></div>';
-                    return;
-                }
-                
-                container.innerHTML = this.recentScans.map(scan => `
-                    <div class="asset-card">
-                        <div class="asset-header">
-                            <div class="asset-code">${scan.code}</div>
-                            <div class="asset-status status-checked">Đã kiểm kê</div>
-                        </div>
-                        <div class="detail-row">
-                            <span class="detail-label">Tên:</span>
-                            <span class="detail-value">${scan.name || 'N/A'}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="detail-label">Thời gian:</span>
-                            <span class="detail-value">${new Date(scan.timestamp).toLocaleTimeString('vi-VN')}</span>
-                        </div>
-                    </div>
-                `).join('');
-            }
-
-            showAssetModal(asset) {
-                const modal = document.getElementById('assetModal');
-                const content = document.getElementById('assetModalContent');
-                
-                const statusClass = asset.inventoryStatus?.checked ? 'status-checked' : 'status-pending';
-                const statusText = asset.inventoryStatus?.checked ? 'Đã kiểm kê' : 'Chưa kiểm kê';
-                
-                content.innerHTML = `
-                    <div class="asset-card" style="box-shadow: none;">
-                        <div class="asset-header">
-                            <div class="asset-code">${asset.Code}</div>
-                            <div class="asset-status ${statusClass}">${statusText}</div>
-                        </div>
-                        <div class="asset-details">
-                            <div class="detail-row">
-                                <span class="detail-label">Tên TV:</span>
-                                <span class="detail-value">${asset['Tên tài sản Tiếng Việt'] || 'N/A'}</span>
-                            </div>
-                            <div class="detail-row">
-                                <span class="detail-label">Tên TA:</span>
-                                <span class="detail-value">${asset['Tên tiếng anh'] || 'N/A'}</span>
-                            </div>
-                            <div class="detail-row">
-                                <span class="detail-label">Model:</span>
-                                <span class="detail-value">${asset.Model || 'N/A'}</span>
-                            </div>
-                            <div class="detail-row">
-                                <span class="detail-label">Serial:</span>
-                                <span class="detail-value">${asset.Serial || 'N/A'}</span>
-                            </div>
-                            <div class="detail-row">
-                                <span class="detail-label">Vị trí:</span>
-                                <span class="detail-value">${asset['Vị trí'] || 'N/A'}</span>
-                            </div>
-                            <div class="detail-row">
-                                <span class="detail-label">Bộ phận:</span>
-                                <span class="detail-value">${asset['Bộ phận sử dụng'] || 'N/A'}</span>
-                            </div>
-                            <div class="detail-row">
-                                <span class="detail-label">Giá trị:</span>
-                                <span class="detail-value">${this.formatCurrency(asset['Giá trị ban đầu'])}</span>
-                            </div>
-                        </div>
-                        
-                        ${asset.inventoryStatus?.checked ? `
-                            <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--light);">
-                                <h4 style="margin-bottom: 0.5rem;">Thông tin kiểm kê</h4>
-                                <div class="detail-row">
-                                    <span class="detail-label">Ngày kiểm:</span>
-                                    <span class="detail-value">${asset.inventoryStatus.date}</span>
-                                </div>
-                                <div class="detail-row">
-                                    <span class="detail-label">Người kiểm:</span>
-                                    <span class="detail-value">${asset.inventoryStatus.user}</span>
-                                </div>
-                            </div>
-                        ` : ''}
-                        
-                        <div class="action-buttons" style="margin-top: 1.5rem;">
-                            <button class="btn btn-primary" onclick="app.updateAssetInfo('${asset.Code}')">
-                                ✏️ Cập nhật
-                            </button>
-                            <button class="btn btn-outline" onclick="app.printAssetQR('${asset.Code}')">
-                                🖨️ In QR
-                            </button>
-                            <button class="btn btn-outline" onclick="app.closeModal()">
-                                Đóng
-                            </button>
-                        </div>
-                    </div>
-                `;
-                
-                modal.classList.add('active');
-            }
-
-            closeModal() {
-                document.getElementById('assetModal').classList.remove('active');
-            }
-
-            // ===================================
-            // SEARCH
-            // ===================================
-            
-            setupSearch() {
-                const searchInput = document.getElementById('searchInput');
-                let searchTimeout;
-                
-                searchInput.addEventListener('input', (e) => {
-                    clearTimeout(searchTimeout);
-                    searchTimeout = setTimeout(() => {
-                        this.search(e.target.value);
-                    }, 500);
-                });
-            }
-
-            async search(query) {
-                if (query.length < 2) {
-                    document.getElementById('searchResults').innerHTML = 
-                        '<div class="empty-state"><p>Nhập ít nhất 2 ký tự để tìm kiếm</p></div>';
-                    return;
-                }
-                
-                try {
-                    const result = await this.apiCall('searchAssets', { query });
-                    this.displaySearchResults(result.results);
-                } catch (error) {
-                    document.getElementById('searchResults').innerHTML = 
-                        '<div class="empty-state"><p>Lỗi tìm kiếm: ' + error.message + '</p></div>';
-                }
-            }
-
-            displaySearchResults(results) {
-                const container = document.getElementById('searchResults');
-                
-                if (results.length === 0) {
-                    container.innerHTML = '<div class="empty-state"><p>Không tìm thấy kết quả</p></div>';
-                    return;
-                }
-                
-                container.innerHTML = results.map(asset => `
-                    <div class="result-item" onclick="app.showAssetFromSearch('${encodeURIComponent(JSON.stringify(asset))}')">
-                        <div style="font-weight: bold; color: var(--primary);">${asset.Code}</div>
-                        <div style="color: var(--dark);">${asset['Tên tài sản Tiếng Việt'] || 'N/A'}</div>
-                        <div style="font-size: 0.875rem; color: var(--gray);">
-                            ${asset['Vị trí'] || 'N/A'} | ${asset['Bộ phận sử dụng'] || 'N/A'}
-                        </div>
-                    </div>
-                `).join('');
-            }
-
-            showAssetFromSearch(encodedAsset) {
-                const asset = JSON.parse(decodeURIComponent(encodedAsset));
-                this.showAssetModal(asset);
-            }
-
-            // ===================================
-            // SETTINGS
-            // ===================================
-            
-            loadSettings() {
-                document.getElementById('apiUrl').value = this.apiUrl;
-                document.getElementById('userNameInput').value = this.userName;
-                document.getElementById('locationSelect').value = this.location;
-                document.getElementById('userName').textContent = this.userName;
-            }
-
-            saveSettings() {
-                this.apiUrl = document.getElementById('apiUrl').value;
-                this.userName = document.getElementById('userNameInput').value;
-                this.location = document.getElementById('locationSelect').value;
-                
-                localStorage.setItem('apiUrl', this.apiUrl);
-                localStorage.setItem('userName', this.userName);
-                localStorage.setItem('location', this.location);
-                
-                document.getElementById('userName').textContent = this.userName;
-                
-                this.showToast('Đã lưu cài đặt!', 'success');
-                this.loadDashboard();
-            }
-
-            // ===================================
-            // REPORTS & EXPORT
-            // ===================================
-            
-            async exportReport() {
-                try {
-                    this.showToast('Đang tạo báo cáo...', 'info');
-                    const period = document.getElementById('currentPeriod').textContent;
-                    const result = await this.apiCall('exportInventory', { period });
-                    
-                    if (result.success) {
-                        this.showToast('Báo cáo đã được tạo trong Google Sheets!', 'success');
-                        // Open in new tab if URL provided
-                        if (result.url) {
-                            window.open(result.url, '_blank');
-                        }
-                    }
-                } catch (error) {
-                    this.showToast('Lỗi xuất báo cáo: ' + error.message, 'error');
-                }
-            }
-
-            async resetInventory() {
-                if (!confirm('Bạn có chắc muốn reset kỳ kiểm kê hiện tại? Dữ liệu sẽ được backup.')) {
-                    return;
-                }
-                
-                try {
-                    const period = document.getElementById('currentPeriod').textContent;
-                    const result = await this.apiCall('resetInventory', { period });
-                    
-                    if (result.success) {
-                        this.showToast(`Đã reset kỳ ${period}. Backup: ${result.backupSheet}`, 'success');
-                        this.loadDashboard();
-                        this.recentScans = [];
-                        this.updateRecentScans();
-                    }
-                } catch (error) {
-                    this.showToast('Lỗi reset: ' + error.message, 'error');
-                }
-            }
-
-            printQRCodes() {
-                // Generate QR codes page
-                const printWindow = window.open('', '_blank');
-                printWindow.document.write(`
-                    <!DOCTYPE html>
-                    <html>
-                    <head>
-                        <title>In mã QR tài sản</title>
-                        <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"><\/script>
-                        <style>
-                            body { font-family: Arial, sans-serif; }
-                            .qr-grid { 
-                                display: grid; 
-                                grid-template-columns: repeat(4, 1fr); 
-                                gap: 20px; 
-                                padding: 20px;
-                            }
-                            .qr-item { 
-                                text-align: center; 
-                                border: 1px solid #ccc; 
-                                padding: 10px;
-                                page-break-inside: avoid;
-                            }
-                            .qr-code { margin: 10px 0; }
-                            .qr-label { 
-                                font-size: 12px; 
-                                font-weight: bold;
-                                margin-top: 5px;
-                            }
-                            @media print {
-                                .no-print { display: none; }
-                            }
-                        </style>
-                    </head>
-                    <body>
-                        <h2 class="no-print">Đang tải mã QR...</h2>
-                        <button class="no-print" onclick="window.print()">In trang này</button>
-                        <div id="qrContainer" class="qr-grid"></div>
-                        <script>
-                            // Fetch asset codes and generate QR
-                            fetch('${this.apiUrl}', {
-                                method: 'POST',
-                                body: JSON.stringify({ action: 'generateQRData' }),
-                                headers: { 'Content-Type': 'application/json' }
-                            })
-                            .then(r => r.json())
-                            .then(result => {
-                                const container = document.getElementById('qrContainer');
-                                result.codes.forEach(code => {
-                                    const div = document.createElement('div');
-                                    div.className = 'qr-item';
-                                    div.innerHTML = '<canvas id="qr-' + code + '"></canvas>' +
-                                                   '<div class="qr-label">' + code + '</div>';
-                                    container.appendChild(div);
-                                    
-                                    // Generate QR code
-                                    QRCode.toCanvas(document.getElementById('qr-' + code), 
-                                        code, { width: 150, margin: 1 });
-                                });
-                                document.querySelector('h2').textContent = 'Mã QR đã sẵn sàng để in';
-                            });
-                        <\/script>
-                    </body>
-                    </html>
-                `);
-            }
-
-            printAssetQR(code) {
-                const printWindow = window.open('', '_blank', 'width=400,height=400');
-                printWindow.document.write(`
-                    <!DOCTYPE html>
-                    <html>
-                    <head>
-                        <title>QR Code - ${code}</title>
-                        <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"><\/script>
-                        <style>
-                            body { 
-                                display: flex; 
-                                justify-content: center; 
-                                align-items: center; 
-                                height: 100vh; 
-                                margin: 0;
-                                flex-direction: column;
-                            }
-                            #qrcode { margin: 20px; }
-                            .label { 
-                                font-size: 24px; 
-                                font-weight: bold; 
-                                margin-top: 20px;
-                            }
-                        </style>
-                    </head>
-                    <body>
-                        <canvas id="qrcode"></canvas>
-                        <div class="label">${code}</div>
-                        <script>
-                            QRCode.toCanvas(document.getElementById('qrcode'), 
-                                '${code}', { width: 300, margin: 2 }, 
-                                () => window.print());
-                        <\/script>
-                    </body>
-                    </html>
-                `);
-            }
-
-            async updateAssetInfo(code) {
-                // Show update form
-                const newLocation = prompt('Cập nhật vị trí mới (bỏ trống nếu không đổi):');
-                const notes = prompt('Ghi chú:');
-                
-                if (newLocation !== null || notes !== null) {
-                    try {
-                        const asset = {
-                            code: code,
-                            location: newLocation || undefined,
-                            notes: notes || undefined
-                        };
-                        
-                        await this.apiCall('updateAsset', { asset });
-                        this.showToast('Đã cập nhật thông tin tài sản!', 'success');
-                        this.closeModal();
-                    } catch (error) {
-                        this.showToast('Lỗi cập nhật: ' + error.message, 'error');
-                    }
-                }
-            }
-
-            // ===================================
-            // OFFLINE SUPPORT
-            // ===================================
-            
-            checkOnlineStatus() {
-                if (navigator.onLine) {
-                    document.getElementById('connectionStatus').textContent = 'Online';
-                    document.getElementById('offlineBanner').classList.remove('show');
-                } else {
-                    document.getElementById('connectionStatus').textContent = 'Offline';
-                    document.getElementById('offlineBanner').classList.add('show');
-                }
-            }
-
-            onOnline() {
-                this.checkOnlineStatus();
-                this.syncOfflineQueue();
-                this.showToast('Đã kết nối! Đang đồng bộ dữ liệu...', 'success');
-            }
-
-            onOffline() {
-                this.checkOnlineStatus();
-                this.showToast('Mất kết nối! Dữ liệu sẽ được lưu offline', 'warning');
-            }
-
-            addToOfflineQueue(action, data) {
-                this.offlineQueue.push({
-                    action,
-                    data,
-                    timestamp: Date.now()
-                });
-                localStorage.setItem('offlineQueue', JSON.stringify(this.offlineQueue));
-            }
-
-            async syncOfflineQueue() {
-                const queue = JSON.parse(localStorage.getItem('offlineQueue') || '[]');
-                if (queue.length === 0) return;
-                
-                for (const item of queue) {
-                    try {
-                        await this.apiCall(item.action, item.data);
-                    } catch (error) {
-                        console.error('Sync error:', error);
-                    }
-                }
-                
-                localStorage.removeItem('offlineQueue');
-                this.offlineQueue = [];
-                this.showToast('Đã đồng bộ xong dữ liệu offline!', 'success');
-            }
-
-            // ===================================
-            // PWA SETUP
-            // ===================================
-            
-            setupPWA() {
-                let deferredPrompt;
-                
-                window.addEventListener('beforeinstallprompt', (e) => {
-                    e.preventDefault();
-                    deferredPrompt = e;
-                    document.getElementById('installPrompt').style.display = 'block';
-                });
-                
-                window.installPWA = () => {
-                    if (deferredPrompt) {
-                        deferredPrompt.prompt();
-                        deferredPrompt.userChoice.then((choiceResult) => {
-                            if (choiceResult.outcome === 'accepted') {
-                                this.showToast('Đang cài đặt ứng dụng...', 'success');
-                            }
-                            deferredPrompt = null;
-                            document.getElementById('installPrompt').style.display = 'none';
-                        });
-                    }
-                };
-            }
-
-            // ===================================
-            // UTILITIES
-            // ===================================
-            
-            formatCurrency(value) {
-                if (!value) return 'N/A';
-                return new Intl.NumberFormat('vi-VN', {
-                    style: 'currency',
-                    currency: 'VND'
-                }).format(value);
-            }
-
-            showToast(message, type = 'info') {
-                const toast = document.getElementById('toast');
-                toast.textContent = message;
-                toast.className = `toast show ${type}`;
-                
-                setTimeout(() => {
-                    toast.classList.remove('show');
-                }, 3000);
-            }
-        }
-
-        // Initialize app
-        const app = new AssetManagementApp();
-    </script>
-</body>
-</html><!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#4F46E5">
-    <title>Asset Manager Pro - Quản lý Tài sản</title>
-    
-    <!-- PWA Meta Tags -->
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="manifest" href="manifest.json">
-    
-    <!-- Icons -->
-    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-    <link rel="apple-touch-icon" href="icon-192.png">
-    
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --primary: #4F46E5;
-            --primary-dark: #4338CA;
-            --secondary: #10B981;
-            --danger: #EF4444;
-            --warning: #F59E0B;
-            --dark: #1F2937;
-            --gray: #6B7280;
-            --light: #F3F4F6;
-            --white: #FFFFFF;
-            --shadow: 0 1px 3px rgba(0,0,0,0.12);
-            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            color: var(--dark);
-        }
-
-        /* Container & Layout */
-        .app-container {
-            max-width: 100%;
-            min-height: 100vh;
-            background: var(--white);
+            box-shadow: 0 0 40px rgba(0,0,0,0.1);
         }
 
         /* Header */
         .header {
             background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            color: white;
-            padding: 1rem;
-            box-shadow: var(--shadow-lg);
+            color: var(--white);
+            padding: 20px;
+            text-align: center;
             position: sticky;
             top: 0;
             z-index: 100;
+            box-shadow: var(--shadow-lg);
         }
 
-        .header-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 5px;
+            letter-spacing: -0.5px;
         }
 
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 1.25rem;
-            font-weight: bold;
+        .header .subtitle {
+            font-size: 14px;
+            opacity: 0.9;
         }
 
-        .user-info {
+        /* Stats Bar */
+        .stats-bar {
+            background: var(--white);
+            padding: 15px 20px;
             display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.875rem;
+            justify-content: space-around;
+            box-shadow: var(--shadow);
+            border-radius: 0 0 20px 20px;
+            margin-top: -1px;
+        }
+
+        .stat-item {
+            text-align: center;
+            flex: 1;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--gray);
+            margin-top: 2px;
         }
 
         /* Navigation Tabs */
         .nav-tabs {
-            display: flex;
             background: var(--white);
-            border-bottom: 1px solid var(--light);
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
+            display: flex;
+            padding: 10px;
+            gap: 10px;
+            position: sticky;
+            top: 60px;
+            z-index: 90;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
 
         .nav-tab {
             flex: 1;
-            padding: 1rem;
-            text-align: center;
+            padding: 12px;
             border: none;
-            background: none;
+            background: var(--light);
             color: var(--gray);
-            font-size: 0.875rem;
+            border-radius: var(--radius);
+            font-size: 14px;
+            font-weight: 600;
             cursor: pointer;
+            transition: var(--transition);
             position: relative;
-            white-space: nowrap;
-            transition: all 0.3s ease;
+            overflow: hidden;
         }
 
         .nav-tab.active {
-            color: var(--primary);
-            font-weight: 600;
+            background: var(--primary);
+            color: var(--white);
+            transform: scale(1.05);
         }
 
-        .nav-tab.active::after {
+        .nav-tab:hover:not(.active) {
+            background: #E5E7EB;
+            transform: translateY(-2px);
+        }
+
+        .nav-tab::before {
             content: '';
             position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: var(--primary);
-            animation: slideIn 0.3s ease;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
         }
 
-        @keyframes slideIn {
-            from { transform: translateX(-100%); }
-            to { transform: translateX(0); }
+        .nav-tab:active::before {
+            width: 300px;
+            height: 300px;
         }
 
-        /* Tab Panels */
-        .tab-panel {
-            display: none;
-            padding: 1rem;
+        /* Tab Content */
+        .tab-content {
+            padding: 20px;
+            min-height: calc(100vh - 280px);
             animation: fadeIn 0.3s ease;
         }
 
-        .tab-panel.active {
+        .tab-pane {
+            display: none;
+        }
+
+        .tab-pane.active {
             display: block;
+            animation: slideIn 0.3s ease;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Scanner Section */
-        .scanner-container {
+        /* Cards */
+        .card {
             background: var(--white);
-            border-radius: 1rem;
-            padding: 1.5rem;
-            margin-bottom: 1rem;
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 15px;
             box-shadow: var(--shadow);
+            transition: var(--transition);
         }
 
-        #qr-reader {
-            border-radius: 0.5rem;
-            overflow: hidden;
-            margin-bottom: 1rem;
-        }
-
-        .scan-button {
-            width: 100%;
-            padding: 1rem;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            color: white;
-            border: none;
-            border-radius: 0.75rem;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-        }
-
-        .scan-button:active {
-            transform: scale(0.98);
-        }
-
-        .scan-button.scanning {
-            background: linear-gradient(135deg, var(--danger) 0%, #DC2626 100%);
-        }
-
-        /* Asset Card */
-        .asset-card {
-            background: var(--white);
-            border-radius: 1rem;
-            padding: 1.5rem;
-            margin-bottom: 1rem;
-            box-shadow: var(--shadow);
-            transition: transform 0.2s ease;
-        }
-
-        .asset-card:hover {
+        .card:hover {
             transform: translateY(-2px);
             box-shadow: var(--shadow-lg);
         }
 
-        .asset-header {
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 15px;
             display: flex;
-            justify-content: space-between;
-            align-items: start;
-            margin-bottom: 1rem;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-icon {
+            width: 24px;
+            height: 24px;
+            background: var(--primary-light);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-size: 14px;
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 8px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid var(--light);
+            border-radius: var(--radius);
+            font-size: 16px;
+            transition: var(--transition);
+            background: var(--white);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        select.form-control {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236B7280'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 20px;
+            padding-right: 40px;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-decoration: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius:/* Button Styles Continue */
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.5);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:active::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: var(--white);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(79, 70, 229, 0.3);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--secondary) 0%, #059669 100%);
+            color: var(--white);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger) 0%, #DC2626 100%);
+            color: var(--white);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, var(--warning) 0%, #D97706 100%);
+            color: var(--white);
+        }
+
+        .btn-block {
+            width: 100%;
+        }
+
+        .btn-lg {
+            padding: 15px 30px;
+            font-size: 18px;
+        }
+
+        .btn-icon {
+            width: 48px;
+            height: 48px;
+            padding: 0;
+            border-radius: 50%;
+        }
+
+        /* QR Scanner Styles */
+        #qr-reader {
+            border-radius: var(--radius);
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        #qr-reader video {
+            border-radius: var(--radius);
+        }
+
+        .scanner-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .scanner-container {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 20px;
+            max-width: 480px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        /* Asset List */
+        .asset-item {
+            background: var(--white);
+            border: 2px solid var(--light);
+            border-radius: var(--radius);
+            padding: 15px;
+            margin-bottom: 10px;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .asset-item:hover {
+            border-color: var(--primary);
+            transform: translateX(5px);
+        }
+
+        .asset-item.checked {
+            background: linear-gradient(135deg, #D1FAE5 0%, #A7F3D0 100%);
+            border-color: var(--secondary);
         }
 
         .asset-code {
-            font-size: 1.25rem;
-            font-weight: bold;
+            font-size: 18px;
+            font-weight: 700;
             color: var(--primary);
+            margin-bottom: 5px;
         }
 
-        .asset-status {
-            padding: 0.25rem 0.75rem;
-            border-radius: 1rem;
-            font-size: 0.75rem;
+        .asset-name {
+            font-size: 14px;
+            color: var(--dark);
+            margin-bottom: 5px;
+        }
+
+        .asset-info {
+            font-size: 12px;
+            color: var(--gray);
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .asset-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            background: var(--light);
+            border-radius: 6px;
+            font-size: 11px;
             font-weight: 600;
-            text-transform: uppercase;
+            color: var(--gray);
         }
 
-        .status-checked {
+        .asset-badge.success {
             background: #D1FAE5;
             color: #065F46;
         }
 
-        .status-pending {
+        .asset-badge.warning {
+            background: #FEF3C7;
+            color: #92400E;
+        }
+
+        .asset-badge.danger {
             background: #FEE2E2;
             color: #991B1B;
         }
 
-        .asset-details {
-            display: grid;
-            gap: 0.75rem;
+        /* Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+            animation: fadeIn 0.3s ease;
         }
 
-        .detail-row {
+        .modal.show {
             display: flex;
-            gap: 0.5rem;
-            font-size: 0.875rem;
         }
 
-        .detail-label {
-            color: var(--gray);
-            min-width: 100px;
+        .modal-content {
+            background: var(--white);
+            border-radius: var(--radius);
+            max-width: 480px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease;
         }
 
-        .detail-value {
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--light);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 700;
             color: var(--dark);
-            font-weight: 500;
         }
 
-        /* Action Buttons */
-        .action-buttons {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0.75rem;
-            margin-top: 1rem;
-        }
-
-        .btn {
-            padding: 0.75rem;
+        .modal-close {
+            width: 32px;
+            height: 32px;
             border: none;
-            border-radius: 0.5rem;
+            background: var(--light);
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .modal-close:hover {
+            background: var(--danger);
+            color: var(--white);
+            transform: rotate(90deg);
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .modal-footer {
+            padding: 20px;
+            border-top: 1px solid var(--light);
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 2000;
+            pointer-events: none;
+        }
+
+        .toast {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 15px 20px;
+            margin-bottom: 10px;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 250px;
+            pointer-events: all;
+            animation: slideInRight 0.3s ease;
+            transition: var(--transition);
+        }
+
+        .toast.success {
+            border-left: 4px solid var(--secondary);
+        }
+
+        .toast.error {
+            border-left: 4px solid var(--danger);
+        }
+
+        .toast.warning {
+            border-left: 4px solid var(--warning);
+        }
+
+        .toast.info {
+            border-left: 4px solid var(--info);
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--light);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255,255,255,0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+        }
+
+        .loading-overlay.show {
+            display: flex;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .empty-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--light);
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            color: var(--gray);
+        }
+
+        .empty-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 10px;
+        }
+
+        .empty-text {
+            color: var(--gray);
+            margin-bottom: 20px;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { 
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideUp {
+            from { 
+                opacity: 0;
+                transform: translateY(100px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInRight {
+            from { 
+                opacity: 0;
+                transform: translateX(100px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .container {
+                max-width: 100%;
+                border-radius: 0;
+            }
+            
+            .header {
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 20px;
+            }
+            
+            .nav-tabs {
+                padding: 8px;
+                gap: 5px;
+            }
+            
+            .nav-tab {
+                font-size: 12px;
+                padding: 10px 5px;
+            }
+            
+            .modal-content {
+                margin: 10px;
+            }
+            
+            .toast-container {
+                left: 10px;
+                right: 10px;
+                top: 10px;
+            }
+            
+            .toast {
+                width: 100%;
+            }
+        }
+
+        /* Print Styles for QR Codes */
+        @media print {
+            body { background: white; }
+            .no-print { display: none !important; }
+            .qr-print-item {
+                width: 30%;
+                float: left;
+                margin: 1.66%;
+                text-align: center;
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🏢 Asset Manager Pro</h1>
+            <div class="subtitle">Hệ thống Quản lý Tài sản Chuyên nghiệp</div>
+        </div>
+
+        <!-- Stats Bar -->
+        <div class="stats-bar">
+            <div class="stat-item">
+                <span class="stat-value" id="totalAssets">0</span>
+                <span class="stat-label">Tổng tài sản</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value" id="checkedAssets">0</span>
+                <span class="stat-label">Đã kiểm kê</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value" id="progressPercent">0%</span>
+                <span class="stat-label">Tiến độ</span>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="nav-tabs no-print">
+            <button class="nav-tab active" onclick="switchTab('scan')">
+                📷 Quét QR
+            </button>
+            <button class="nav-tab" onclick="switchTab('list')">
+                📋 Danh sách
+            </button>
+            <button class="nav-tab" onclick="switchTab('report')">
+                📊 Báo cáo
+            </button>
+            <button class="nav-tab" onclick="switchTab('settings')">
+                ⚙️ Cài đặt
+            </button>
+        </div>
+
+        <!-- Tab Content -->
+        <div class="tab-content">
+            <!-- Scan Tab -->
+            <div id="scan-tab" class="tab-pane active">
+                <div class="card">
+                    <div class="card-title">
+                        <span class="card-icon">📷</span>
+                        Quét mã QR tài sản
+                    </div>
+                    <div id="qr-reader"></div>
+                    <button class="btn btn-primary btn-block btn-lg" onclick="startScanner()">
+                        🔍 Bắt đầu quét QR Code
+                    </button>
+                    <div style="margin-top: 15px;">
+                        <input type="text" class="form-control" id="manualCode" placeholder="Hoặc nhập mã tài sản thủ công...">
+                        <button class="btn btn-success btn-block" style="margin-top: 10px;" onclick="manualCheckIn()">
+                            ✅ Kiểm kê thủ công
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Recent Scans -->
+                <div class="card">
+                    <div class="card-title">
+                        <span class="card-icon">🕐</span>
+                        Quét gần đây
+                    </div>
+                    <div id="recentScans">
+                        <div class="empty-state">
+                            <div class="empty-icon">📦</div>
+                            <div class="empty-title">Chưa có dữ liệu</div>
+                            <div class="empty-text">Bắt đầu quét để xem lịch sử</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- List Tab -->
+            <div id="list-tab" class="tab-pane">
+                <div class="card">
+                    <div class="card-title">
+                        <span class="card-icon">🔍</span>
+                        Tìm kiếm tài sản
+                    </div>
+                    <input type="text" class="form-control" id="searchInput" placeholder="Tìm theo mã, tên, vị trí..." onkeyup="searchAssets()">
+                </div>
+
+                <div class="card">
+                    <div class="card-title">
+                        <span class="card-icon">📋</span>
+                        Danh sách tài sản
+                    </div>
+                    <div id="assetList">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Report Tab -->
+            <div id="report-tab" class="tab-pane">
+                <div class="card">
+                    <div class="card-title">
+                        <span class="card-icon">📊</span>
+                        Thống kê kiểm kê
+                    </div>
+                    <canvas id="inventoryChart"></canvas>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">
+                        <span class="card-icon">👥</span>
+                        Theo người kiểm kê
+                    </div>
+                    <div id="userStats"></div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">
+                        <span class="card-icon">📍</span>
+                        Theo vị trí
+                    </div>
+                    <div id="locationStats"></div>
+                </div>
+
+                <button class="btn btn-success btn-block" onclick="exportReport()">
+                    📥 Xuất báo cáo Excel
+                </button>
+            </div>
+
+            <!-- Settings Tab -->
+            <div id="settings-tab" class="tab-pane">
+                <div class="card">
+                    <div class="card-title">
+                        <span class="card-icon">🔗</span>
+                        Kết nối Google Sheets
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">API URL:</label>
+                        <input type="text" class="form-control" id="apiUrl" placeholder="Nhập Web App URL từ Google Apps Script...">
+                        <small style="color: var(--gray); display: block; margin-top: 5px;">
+                            Deploy Apps Script và paste URL vào đây
+                        </small>
+                    </div>
+                    <button class="btn btn-primary btn-block" onclick="saveSettings()">
+                        💾 Lưu cài đặt
+                    </button>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">
+                        <span class="card-icon">👤</span>
+                        Thông tin người dùng
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Tên người kiểm kê:</label>
+                        <input type="text" class="form-control" id="userName" placeholder="Nhập tên của bạn...">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Khu vực/Phòng ban:</label>
+                        <input type="text" class="form-control" id="userLocation" placeholder="VD: Tầng 2, Kho A...">
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">
+                        <span class="card-icon">🔄</span>
+                        Reset kỳ kiểm kê
+                    </div>
+                    <p style="color: var(--gray); margin-bottom: 15px;">
+                        ⚠️ Thao tác này sẽ xóa toàn bộ dữ liệu kiểm kê hiện tại và tạo backup
+                    </p>
+                    <button class="btn btn-danger btn-block" onclick="confirmReset()">
+                        🗑️ Reset kỳ kiểm kê mới
+                    </button>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">
+                        <span class="card-icon">🖨️</span>
+                        In mã QR Code
+                    </div>
+                    <button class="btn btn-warning btn-block" onclick="generateQRCodes()">
+                        📄 Tạo và in QR cho tất cả tài sản
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
