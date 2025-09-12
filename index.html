@@ -3,39 +3,19 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hệ Thống Quản Lý Tài Sản - VN BP</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asset Manager - Hệ Thống Quản Lý Tài Sản</title>
 
-    <!-- PWA Manifest -->
+    <!-- PWA Meta -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#2563eb">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="Asset Manager">
 
-    <!-- Icons -->
-    <link rel="icon" type="image/png" sizes="192x192"
-        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' fill='%232563eb' viewBox='0 0 24 24'><path d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z'/></svg>">
-
-    <!-- QR Scanner Library -->
+    <!-- QR Libraries -->
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js"></script>
 
     <style>
-        :root {
-            --primary: #2563eb;
-            --primary-dark: #1d4ed8;
-            --secondary: #64748b;
-            --success: #059669;
-            --warning: #d97706;
-            --error: #dc2626;
-            --surface: #ffffff;
-            --background: #f8fafc;
-            --on-surface: #1e293b;
-            --border: #e2e8f0;
-            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-        }
-
         * {
             margin: 0;
             padding: 0;
@@ -44,241 +24,112 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--background);
-            color: var(--on-surface);
-            line-height: 1.5;
+            background: #f8fafc;
+            color: #1e293b;
+            line-height: 1.6;
         }
 
-        /* Layout */
-        .app {
-            display: flex;
-            min-height: 100vh;
-        }
-
-        .sidebar {
-            width: 280px;
-            background: var(--surface);
-            border-right: 1px solid var(--border);
-            box-shadow: var(--shadow);
-            display: flex;
-            flex-direction: column;
-            position: fixed;
-            height: 100vh;
-            z-index: 1000;
-            transform: translateX(-100%);
-            transition: transform 0.3s ease;
-        }
-
-        .sidebar.open {
-            transform: translateX(0);
-        }
-
-        .main-content {
-            flex: 1;
-            padding: 0;
-            margin-left: 0;
-            transition: margin-left 0.3s ease;
-        }
-
-        .main-content.with-sidebar {
-            margin-left: 280px;
-        }
-
-        .header {
-            background: var(--surface);
-            border-bottom: 1px solid var(--border);
-            padding: 1rem 1.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: between;
-            box-shadow: var(--shadow);
-        }
-
-        .menu-toggle {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            padding: 0.5rem;
-            border-radius: 0.375rem;
-            transition: background-color 0.2s;
-            display: block;
-        }
-
-        .menu-toggle:hover {
-            background: var(--background);
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 1.5rem;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .logo-icon {
-            width: 2.5rem;
-            height: 2.5rem;
-            background: var(--primary);
-            border-radius: 0.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            font-size: 1.25rem;
-        }
-
-        .logo-text {
-            font-weight: 600;
-            font-size: 1.125rem;
-            color: var(--on-surface);
-        }
-
-        .nav {
-            flex: 1;
-            padding: 1rem 0;
-        }
-
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.75rem 1.5rem;
-            text-decoration: none;
-            color: var(--secondary);
-            transition: all 0.2s;
-            cursor: pointer;
-            border: none;
-            background: none;
-            width: 100%;
-            text-align: left;
-        }
-
-        .nav-item:hover,
-        .nav-item.active {
-            background: #eff6ff;
-            color: var(--primary);
-        }
-
-        .nav-item.active {
-            border-right: 2px solid var(--primary);
-        }
-
-        .nav-icon {
-            width: 1.25rem;
-            height: 1.25rem;
-        }
-
-        .content {
-            padding: 2rem;
-            max-width: 1400px;
+        .container {
+            max-width: 1200px;
             margin: 0 auto;
+            padding: 1rem;
         }
 
+        /* Header */
+        .header {
+            background: white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+        }
+
+        .header h1 {
+            color: #2563eb;
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Navigation */
+        .nav {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .nav-btn {
+            background: #2563eb;
+            color: white;
+            padding: 1rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            justify-content: center;
+            text-decoration: none;
+            min-height: 60px;
+        }
+
+        .nav-btn:hover {
+            background: #1d4ed8;
+            transform: translateY(-2px);
+        }
+
+        .nav-btn.active {
+            background: #059669;
+        }
+
+        /* Page Content */
         .page {
             display: none;
-            animation: fadeIn 0.3s ease-in-out;
+            background: white;
+            border-radius: 0.75rem;
+            padding: 2rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
         }
 
         .page.active {
             display: block;
         }
 
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .page h2 {
+            color: #2563eb;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
         }
 
-        /* Dashboard */
-        .stats-grid {
+        /* Stats Cards */
+        .stats {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
             margin-bottom: 2rem;
         }
 
         .stat-card {
-            background: var(--surface);
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: white;
             padding: 1.5rem;
             border-radius: 0.75rem;
-            box-shadow: var(--shadow);
-            border: 1px solid var(--border);
+            text-align: center;
         }
 
-        .stat-value {
+        .stat-number {
             font-size: 2rem;
             font-weight: bold;
-            color: var(--primary);
             margin-bottom: 0.5rem;
         }
 
         .stat-label {
-            color: var(--secondary);
+            opacity: 0.9;
             font-size: 0.875rem;
-        }
-
-        /* Buttons */
-        .btn {
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 0.5rem;
-            font-weight: 500;
-            font-size: 0.875rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            justify-content: center;
-            min-height: 48px;
-        }
-
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: var(--primary-dark);
-        }
-
-        .btn-secondary {
-            background: var(--secondary);
-            color: white;
-        }
-
-        .btn-success {
-            background: var(--success);
-            color: white;
-        }
-
-        .btn-warning {
-            background: var(--warning);
-            color: white;
-        }
-
-        .btn-outline {
-            background: transparent;
-            border: 1px solid var(--border);
-            color: var(--secondary);
-        }
-
-        .btn-outline:hover {
-            background: var(--background);
-        }
-
-        .btn-full {
-            width: 100%;
         }
 
         /* Forms */
@@ -290,176 +141,188 @@
             display: block;
             margin-bottom: 0.5rem;
             font-weight: 500;
-            color: var(--on-surface);
+            color: #374151;
         }
 
         .form-input {
             width: 100%;
             padding: 0.75rem;
-            border: 1px solid var(--border);
+            border: 1px solid #d1d5db;
             border-radius: 0.5rem;
             font-size: 1rem;
             transition: border-color 0.2s;
-            min-height: 48px;
         }
 
         .form-input:focus {
             outline: none;
-            border-color: var(--primary);
+            border-color: #2563eb;
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-success {
+            background: #059669;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #047857;
+        }
+
+        .btn-warning {
+            background: #d97706;
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #b45309;
+        }
+
+        .btn-full {
+            width: 100%;
+            margin-bottom: 1rem;
         }
 
         /* QR Scanner */
         .scanner-container {
-            background: var(--surface);
+            background: #000;
             border-radius: 0.75rem;
-            box-shadow: var(--shadow);
             overflow: hidden;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem;
+            min-height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         #reader {
             width: 100%;
-            border: none;
         }
 
-        /* Asset Cards */
-        .assets-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 1.5rem;
-        }
-
-        .asset-card {
-            background: var(--surface);
+        /* QR Result */
+        .qr-result {
+            background: #f0f9ff;
+            border: 2px solid #0ea5e9;
             border-radius: 0.75rem;
-            box-shadow: var(--shadow);
-            border: 1px solid var(--border);
-            overflow: hidden;
-            transition: transform 0.2s, box-shadow 0.2s;
+            padding: 2rem;
+            margin: 1rem 0;
+            text-align: center;
         }
 
-        .asset-card:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-lg);
+        .qr-result.success {
+            background: #f0fdf4;
+            border-color: #22c55e;
         }
 
-        .asset-header {
-            padding: 1rem 1.5rem;
-            border-bottom: 1px solid var(--border);
-            background: var(--background);
-        }
-
-        .asset-code {
-            font-weight: bold;
-            color: var(--primary);
-            font-size: 1.125rem;
-        }
-
-        .asset-name {
-            color: var(--secondary);
-            font-size: 0.875rem;
-            margin-top: 0.25rem;
-        }
-
-        .asset-body {
-            padding: 1.5rem;
+        .qr-result h3 {
+            color: #059669;
+            margin-bottom: 1rem;
         }
 
         .asset-info {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            margin: 1rem 0;
+            text-align: left;
+        }
+
+        .asset-info div {
+            padding: 0.5rem;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 0.25rem;
+        }
+
+        /* Assets Grid */
+        .assets-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 1rem;
+        }
+
+        .asset-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            transition: all 0.2s;
+        }
+
+        .asset-card:hover {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .asset-code {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #2563eb;
+            margin-bottom: 0.5rem;
+        }
+
+        .asset-name {
+            color: #6b7280;
             margin-bottom: 1rem;
         }
 
-        .asset-info-item {
+        .asset-details {
+            display: grid;
+            gap: 0.5rem;
             font-size: 0.875rem;
         }
 
-        .asset-info-label {
-            color: var(--secondary);
-            margin-bottom: 0.25rem;
-        }
-
-        .asset-info-value {
-            font-weight: 500;
-        }
-
-        .asset-actions {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: 1rem;
-        }
-
-        /* Status Badges */
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.25rem;
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 500;
-        }
-
-        .status-checked {
-            background: #dcfce7;
-            color: var(--success);
-        }
-
-        .status-unchecked {
-            background: #fef3c7;
-            color: var(--warning);
-        }
-
         /* QR Code Display */
-        .qr-code-container {
+        .qr-display {
             text-align: center;
             padding: 2rem;
-            background: var(--surface);
+            background: #f9fafb;
             border-radius: 0.75rem;
-            box-shadow: var(--shadow);
             margin: 1rem 0;
         }
 
-        /* Responsive */
-        @media (min-width: 768px) {
-            .menu-toggle {
-                display: none;
-            }
-
-            .sidebar {
-                position: relative;
-                transform: translateX(0);
-                height: auto;
-            }
-
-            .main-content {
-                margin-left: 280px;
-            }
+        /* Alerts */
+        .alert {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
         }
 
-        @media (max-width: 767px) {
-            .content {
-                padding: 1rem;
-            }
+        .alert-success {
+            background: #f0fdf4;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
 
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
+        .alert-error {
+            background: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
 
-            .assets-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .asset-info {
-                grid-template-columns: 1fr;
-            }
-
-            .asset-actions {
-                flex-direction: column;
-            }
+        .alert-warning {
+            background: #fffbeb;
+            color: #92400e;
+            border: 1px solid #fed7aa;
         }
 
         /* Loading */
@@ -467,1981 +330,1092 @@
             display: inline-block;
             width: 20px;
             height: 20px;
-            border: 3px solid rgba(255, 255, 255, .3);
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #2563eb;
             border-radius: 50%;
-            border-top-color: #fff;
-            animation: spin 1s ease-in-out infinite;
+            animation: spin 1s linear infinite;
         }
 
         @keyframes spin {
-            to {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
                 transform: rotate(360deg);
             }
         }
 
-        /* Alert Messages */
-        .alert {
-            padding: 1rem;
-            border-radius: 0.5rem;
-            margin-bottom: 1rem;
-            border: 1px solid;
+        .text-center {
+            text-align: center;
         }
 
-        .alert-success {
-            background: #dcfce7;
-            color: var(--success);
-            border-color: var(--success);
+        .hidden {
+            display: none !important;
         }
 
-        .alert-error {
-            background: #fef2f2;
-            color: var(--error);
-            border-color: var(--error);
-        }
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 0.5rem;
+            }
 
-        .alert-warning {
-            background: #fefbeb;
-            color: var(--warning);
-            border-color: var(--warning);
-        }
+            .nav {
+                grid-template-columns: 1fr;
+            }
 
-        /* Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 2000;
-        }
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
 
-        .modal.active {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+            .assets-grid {
+                grid-template-columns: 1fr;
+            }
 
-        .modal-content {
-            background: var(--surface);
-            border-radius: 0.75rem;
-            padding: 2rem;
-            margin: 1rem;
-            max-width: 500px;
-            width: 100%;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-        }
-
-        .modal-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-        }
-
-        .modal-close {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            padding: 0.25rem;
-            border-radius: 0.25rem;
-            transition: background-color 0.2s;
-        }
-
-        .modal-close:hover {
-            background: var(--background);
+            .form-input,
+            .btn {
+                min-height: 48px;
+            }
         }
     </style>
 </head>
 
 <body>
-    <div class="app">
-        <!-- Sidebar -->
-        <div class="sidebar" id="sidebar">
-            <div class="logo">
-                <div class="logo-icon">AS</div>
-                <div class="logo-text">Asset Manager</div>
-            </div>
-
-            <nav class="nav">
-                <button class="nav-item active" data-page="dashboard">
-                    <svg class="nav-icon" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                            d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
-                    </svg>
-                    Dashboard
-                </button>
-
-                <button class="nav-item" data-page="scanner">
-                    <svg class="nav-icon" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd"
-                            d="M3 4a1 1 0 011-1h3a1 1 0 000 2H6.414l2.293 2.293a1 1 0 11-1.414 1.414L5 6.414V8a1 1 0 01-2 0V4zm9 1a1 1 0 010 2h1.586l-2.293 2.293a1 1 0 001.414 1.414L15 8.414V10a1 1 0 102 0V6a1 1 0 00-1-1h-4zm-9 7a1 1 0 102 0v1.586l2.293-2.293a1 1 0 011.414 1.414L6.414 15H8a1 1 0 100-2H4a1 1 0 00-1 1v4zm13-1a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 110-2h1.586l-2.293-2.293a1 1 0 011.414-1.414L15 13.586V12z" />
-                    </svg>
-                    Quét QR
-                </button>
-
-                <button class="nav-item" data-page="assets">
-                    <svg class="nav-icon" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                            d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
-                    </svg>
-                    Danh sách tài sản
-                </button>
-
-                <button class="nav-item" data-page="qr-generator">
-                    <svg class="nav-icon" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd"
-                            d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" />
-                    </svg>
-                    Tạo QR Code
-                </button>
-
-                <button class="nav-item" data-page="inventory">
-                    <svg class="nav-icon" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd"
-                            d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" />
-                    </svg>
-                    Lịch sử kiểm kê
-                </button>
-
-                <button class="nav-item" data-page="settings">
-                    <svg class="nav-icon" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd"
-                            d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" />
-                    </svg>
-                    Cài đặt
-                </button>
-            </nav>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🏢 Asset Manager</h1>
+            <p>Hệ thống quản lý và kiểm kê tài sản với QR Code</p>
         </div>
 
-        <!-- Main Content -->
-        <div class="main-content" id="mainContent">
-            <div class="header">
-                <button class="menu-toggle" id="menuToggle">
-                    <svg fill="currentColor" viewBox="0 0 20 20" width="24" height="24">
-                        <path fill-rule="evenodd"
-                            d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" />
-                    </svg>
+        <!-- Navigation -->
+        <div class="nav">
+            <button class="nav-btn active" onclick="showPage('dashboard')">
+                📊 Dashboard
+            </button>
+            <button class="nav-btn" onclick="showPage('scanner')">
+                📱 Quét QR
+            </button>
+            <button class="nav-btn" onclick="showPage('assets')">
+                📋 Danh sách tài sản
+            </button>
+            <button class="nav-btn" onclick="showPage('qr-generator')">
+                🎯 Tạo QR Code
+            </button>
+            <button class="nav-btn" onclick="showPage('settings')">
+                ⚙️ Cài đặt
+            </button>
+        </div>
+
+        <!-- Dashboard Page -->
+        <div id="dashboard" class="page active">
+            <h2>📊 Dashboard Tổng Quan</h2>
+
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalAssets">0</div>
+                    <div class="stat-label">Tổng số tài sản</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="checkedAssets">0</div>
+                    <div class="stat-label">Đã kiểm kê</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="uncheckedAssets">0</div>
+                    <div class="stat-label">Chưa kiểm kê</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="progressPercent">0%</div>
+                    <div class="stat-label">Tiến độ hoàn thành</div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <button class="btn btn-primary btn-full" onclick="showPage('scanner')">
+                    📱 Bắt đầu quét QR Code
+                </button>
+                <button class="btn btn-success btn-full" onclick="showPage('assets')">
+                    📋 Xem danh sách tài sản
+                </button>
+                <button class="btn btn-warning btn-full" onclick="showPage('qr-generator')">
+                    🎯 Tạo QR Code hàng loạt
+                </button>
+            </div>
+        </div>
+
+        <!-- Scanner Page -->
+        <div id="scanner" class="page">
+            <h2>📱 Quét QR Code Tài Sản</h2>
+
+            <div id="scannerAlert" class="alert alert-warning hidden">
+                <strong>Lưu ý:</strong> Vui lòng cho phép truy cập camera để quét QR code.
+            </div>
+
+            <div class="scanner-container" id="scannerContainer">
+                <div id="reader"></div>
+            </div>
+
+            <div class="text-center">
+                <button id="startScanBtn" class="btn btn-primary" onclick="startScanning()">
+                    🎥 Bắt đầu quét
+                </button>
+                <button id="stopScanBtn" class="btn btn-warning hidden" onclick="stopScanning()">
+                    🛑 Dừng quét
                 </button>
             </div>
 
-            <div class="content">
-                <!-- Dashboard Page -->
-                <div id="dashboard" class="page active">
-                    <h1 style="margin-bottom: 2rem; font-size: 2rem; font-weight: 600;">Dashboard Quản Lý Tài Sản</h1>
+            <div id="scanResult" class="hidden">
+                <!-- Kết quả quét sẽ hiển thị ở đây -->
+            </div>
+        </div>
 
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <div class="stat-value" id="totalAssets">0</div>
-                            <div class="stat-label">Tổng tài sản</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value" id="checkedAssets">0</div>
-                            <div class="stat-label">Đã kiểm kê</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value" id="uncheckedAssets">0</div>
-                            <div class="stat-label">Chưa kiểm kê</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value" id="inventoryProgress">0%</div>
-                            <div class="stat-label">Tiến độ kiểm kê</div>
-                        </div>
-                    </div>
+        <!-- Assets Page -->
+        <div id="assets" class="page">
+            <h2>📋 Danh Sách Tài Sản</h2>
 
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
-                        <button class="btn btn-primary btn-full" data-page="scanner">
-                            <svg fill="currentColor" viewBox="0 0 20 20" width="20" height="20">
-                                <path fill-rule="evenodd"
-                                    d="M3 4a1 1 0 011-1h3a1 1 0 000 2H6.414l2.293 2.293a1 1 0 11-1.414 1.414L5 6.414V8a1 1 0 01-2 0V4zm9 1a1 1 0 010 2h1.586l-2.293 2.293a1 1 0 001.414 1.414L15 8.414V10a1 1 0 102 0V6a1 1 0 00-1-1h-4z" />
-                            </svg>
-                            Bắt đầu quét QR
-                        </button>
-                        <button class="btn btn-secondary btn-full" data-page="qr-generator">
-                            <svg fill="currentColor" viewBox="0 0 20 20" width="20" height="20">
-                                <path fill-rule="evenodd"
-                                    d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" />
-                            </svg>
-                            Tạo QR Code
-                        </button>
-                    </div>
+            <div class="form-group">
+                <input type="text" id="searchInput" class="form-input" placeholder="🔍 Tìm kiếm tài sản..."
+                    onkeyup="searchAssets()">
+            </div>
+
+            <div class="form-group">
+                <button class="btn btn-primary" onclick="loadAssets()">
+                    🔄 Tải lại danh sách
+                </button>
+                <button class="btn btn-success" onclick="exportData()">
+                    📤 Export Excel
+                </button>
+            </div>
+
+            <div id="assetsLoading" class="text-center hidden">
+                <div class="loading"></div>
+                <p>Đang tải dữ liệu tài sản...</p>
+            </div>
+
+            <div id="assetsList" class="assets-grid">
+                <!-- Danh sách tài sản sẽ hiển thị ở đây -->
+            </div>
+        </div>
+
+        <!-- QR Generator Page -->
+        <div id="qr-generator" class="page">
+            <h2>🎯 Tạo QR Code</h2>
+
+            <div class="form-group">
+                <label class="form-label">Nhập mã tài sản:</label>
+                <input type="text" id="assetCodeInput" class="form-input" placeholder="Ví dụ: HT001, TS002...">
+            </div>
+
+            <div class="form-group">
+                <button class="btn btn-primary btn-full" onclick="generateSingleQR()">
+                    🎯 Tạo QR Code đơn lẻ
+                </button>
+                <button class="btn btn-success btn-full" onclick="generateAllQR()">
+                    📦 Tạo QR Code hàng loạt
+                </button>
+            </div>
+
+            <div id="qrProgress" class="hidden">
+                <div class="alert alert-warning">
+                    <div class="loading"></div>
+                    Đang tạo QR code... <span id="progressText">0/0</span>
                 </div>
+            </div>
 
-                <!-- QR Scanner Page -->
-                <div id="scanner" class="page">
-                    <h1 style="margin-bottom: 2rem; font-size: 2rem; font-weight: 600;">Quét QR Code Tài Sản</h1>
+            <div id="qrResult" class="qr-display hidden">
+                <!-- QR code sẽ hiển thị ở đây -->
+            </div>
+        </div>
 
-                    <div id="scannerAlert" class="alert alert-warning" style="display: none;">
-                        <strong>Lưu ý:</strong> Vui lòng cho phép truy cập camera để quét QR code.
-                    </div>
+        <!-- Settings Page -->
+        <div id="settings" class="page">
+            <h2>⚙️ Cài Đặt Hệ Thống</h2>
 
-                    <div class="scanner-container">
-                        <div id="reader" style="width: 100%;"></div>
-                    </div>
+            <div class="form-group">
+                <label class="form-label">📡 Google Apps Script URL:</label>
+                <input type="url" id="apiUrl" class="form-input"
+                    placeholder="https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec">
+                <small style="color: #6b7280; margin-top: 0.5rem; display: block;">
+                    Nhập URL API từ Google Apps Script để kết nối với Google Sheets
+                </small>
+            </div>
 
-                    <div style="text-align: center; margin-bottom: 2rem;">
-                        <button id="startScanBtn" class="btn btn-primary">
-                            <svg fill="currentColor" viewBox="0 0 20 20" width="20" height="20">
-                                <path d="M2 6a2 2 0 012-2h6l2 2h6a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" />
-                            </svg>
-                            Bắt đầu quét
-                        </button>
-                        <button id="stopScanBtn" class="btn btn-secondary" style="display: none;">
-                            <svg fill="currentColor" viewBox="0 0 20 20" width="20" height="20">
-                                <path fill-rule="evenodd"
-                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 001 1h4a1 1 0 001-1V8a1 1 0 00-1-1H8z" />
-                            </svg>
-                            Dừng quét
-                        </button>
-                    </div>
+            <div class="form-group">
+                <label class="form-label">👤 Tên người kiểm kê:</label>
+                <input type="text" id="userName" class="form-input" placeholder="Nhập tên của bạn">
+            </div>
 
-                    <div id="scannedResult" style="display: none;">
-                        <!-- Kết quả quét sẽ hiển thị ở đây -->
-                    </div>
-                </div>
+            <div class="form-group">
+                <label class="form-label">🏢 Bộ phận:</label>
+                <input type="text" id="userDepartment" class="form-input" placeholder="Ví dụ: Kế toán, IT...">
+            </div>
 
-                <!-- Assets List Page -->
-                <div id="assets" class="page">
-                    <div
-                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
-                        <h1 style="font-size: 2rem; font-weight: 600;">Danh Sách Tài Sản</h1>
-                        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-                            <input type="text" id="searchAssets" placeholder="Tìm kiếm tài sản..." class="form-input"
-                                style="min-width: 200px;">
-                            <button class="btn btn-primary" onclick="loadAssets()">
-                                <svg fill="currentColor" viewBox="0 0 20 20" width="20" height="20">
-                                    <path fill-rule="evenodd"
-                                        d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" />
-                                </svg>
-                                Tải lại
-                            </button>
-                        </div>
-                    </div>
+            <div class="form-group">
+                <label class="form-label">📍 Vị trí làm việc:</label>
+                <select id="userLocation" class="form-input">
+                    <option value="">Chọn vị trí</option>
+                    <option value="Produce">Produce</option>
+                    <option value="SMT">SMT</option>
+                    <option value="QTS">QTS</option>
+                    <option value="QC">QC</option>
+                    <option value="Warehouse">Warehouse</option>
+                    <option value="100% Office">100% Office</option>
+                    <option value="Canteen">Canteen</option>
+                </select>
+            </div>
 
-                    <div id="assetsLoading" style="text-align: center; display: none;">
-                        <div class="loading"></div>
-                        <p>Đang tải dữ liệu tài sản...</p>
-                    </div>
+            <div class="form-group">
+                <button class="btn btn-primary" onclick="testConnection()">
+                    🔌 Test kết nối
+                </button>
+                <button class="btn btn-success" onclick="saveSettings()">
+                    💾 Lưu cài đặt
+                </button>
+            </div>
 
-                    <div class="assets-grid" id="assetsGrid">
-                        <!-- Danh sách tài sản sẽ được load ở đây -->
-                    </div>
-                </div>
+            <div id="connectionStatus" class="hidden">
+                <!-- Trạng thái kết nối sẽ hiển thị ở đây -->
+            </div>
 
-                <!-- QR Generator Page -->
-                <div id="qr-generator" class="page">
-                    <h1 style="margin-bottom: 2rem; font-size: 2rem; font-weight: 600;">Tạo QR Code Tài Sản</h1>
-
-                    <div style="display: grid; gap: 2rem;">
-                        <div
-                            style="background: var(--surface); padding: 2rem; border-radius: 0.75rem; box-shadow: var(--shadow);">
-                            <h3 style="margin-bottom: 1rem;">Tạo QR Code Theo Mã Tài Sản</h3>
-                            <div class="form-group">
-                                <label class="form-label">Nhập mã tài sản:</label>
-                                <input type="text" id="assetCodeInput" placeholder="Ví dụ: HT001, TS002..."
-                                    class="form-input">
-                            </div>
-                            <button class="btn btn-primary" onclick="generateSingleQR()">
-                                <svg fill="currentColor" viewBox="0 0 20 20" width="20" height="20">
-                                    <path fill-rule="evenodd"
-                                        d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" />
-                                </svg>
-                                Tạo QR Code
-                            </button>
-                            <div id="singleQRResult" class="qr-code-container" style="display: none;">
-                                <!-- QR code sẽ hiển thị ở đây -->
-                            </div>
-                        </div>
-
-                        <div
-                            style="background: var(--surface); padding: 2rem; border-radius: 0.75rem; box-shadow: var(--shadow);">
-                            <h3 style="margin-bottom: 1rem;">Tạo QR Code Hàng Loạt</h3>
-                            <p style="margin-bottom: 1rem; color: var(--secondary);">Tạo QR code cho tất cả tài sản và
-                                tải về dưới dạng PDF để in.</p>
-                            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-                                <button class="btn btn-success" onclick="generateAllQR()">
-                                    <svg fill="currentColor" viewBox="0 0 20 20" width="20" height="20">
-                                        <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
-                                        <path fill-rule="evenodd"
-                                            d="M4 5a2 2 0 012-2v1a1 1 0 001 1h6a1 1 0 001-1V3a2 2 0 012 2v6.5a1.5 1.5 0 01-1.5 1.5h-.501a2.01 2.01 0 00-.499.123 1.5 1.5 0 11-2.122-2.12c.054.067.118.128.19.183V5a1 1 0 00-1-1H7a1 1 0 00-1 1v5.5a1.5 1.5 0 11-2 0V5z" />
-                                    </svg>
-                                    Tạo tất cả QR Code
-                                </button>
-                                <button class="btn btn-warning" onclick="downloadQRPDF()" id="downloadPDFBtn"
-                                    style="display: none;">
-                                    <svg fill="currentColor" viewBox="0 0 20 20" width="20" height="20">
-                                        <path fill-rule="evenodd"
-                                            d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" />
-                                    </svg>
-                                    Tải PDF
-                                </button>
-                            </div>
-                            <div id="qrGenerationProgress" style="display: none; margin-top: 1rem;">
-                                <div
-                                    style="background: var(--background); height: 8px; border-radius: 4px; overflow: hidden;">
-                                    <div id="progressBar"
-                                        style="background: var(--primary); height: 100%; width: 0%; transition: width 0.3s;">
-                                    </div>
-                                </div>
-                                <p style="margin-top: 0.5rem; text-align: center; color: var(--secondary);">
-                                    Đang tạo QR code: <span id="progressText">0/0</span>
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Inventory History Page -->
-                <div id="inventory" class="page">
-                    <div
-                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
-                        <h1 style="font-size: 2rem; font-weight: 600;">Lịch Sử Kiểm Kê</h1>
-                        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-                            <select id="inventoryFilter" class="form-input" style="min-width: 150px;">
-                                <option value="">Tất cả</option>
-                                <option value="checked">Đã kiểm kê</option>
-                                <option value="unchecked">Chưa kiểm kê</option>
-                            </select>
-                            <button class="btn btn-warning" onclick="resetInventory()">
-                                <svg fill="currentColor" viewBox="0 0 20 20" width="20" height="20">
-                                    <path fill-rule="evenodd"
-                                        d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1z" />
-                                </svg>
-                                Reset kiểm kê
-                            </button>
-                            <button class="btn btn-success" onclick="exportInventory()">
-                                <svg fill="currentColor" viewBox="0 0 20 20" width="20" height="20">
-                                    <path fill-rule="evenodd"
-                                        d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" />
-                                </svg>
-                                Export Excel
-                            </button>
-                        </div>
-                    </div>
-
-                    <div id="inventoryStats" class="stats-grid" style="margin-bottom: 2rem;">
-                        <!-- Stats sẽ được cập nhật tự động -->
-                    </div>
-
-                    <div id="inventoryTable"
-                        style="background: var(--surface); border-radius: 0.75rem; box-shadow: var(--shadow); overflow: hidden;">
-                        <!-- Bảng lịch sử kiểm kê sẽ được load ở đây -->
-                    </div>
-                </div>
-
-                <!-- Settings Page -->
-                <div id="settings" class="page">
-                    <h1 style="margin-bottom: 2rem; font-size: 2rem; font-weight: 600;">Cài Đặt Hệ Thống</h1>
-
-                    <div style="display: grid; gap: 2rem;">
-                        <!-- Google Sheets Configuration -->
-                        <div
-                            style="background: var(--surface); padding: 2rem; border-radius: 0.75rem; box-shadow: var(--shadow);">
-                            <h3 style="margin-bottom: 1rem;">Kết Nối Google Sheets</h3>
-                            <p style="margin-bottom: 1rem; color: var(--secondary);">
-                                Nhập URL API từ Google Apps Script để kết nối với Google Sheets.
-                            </p>
-
-                            <div class="form-group">
-                                <label class="form-label">Google Apps Script URL:</label>
-                                <input type="url" id="apiUrl"
-                                    placeholder="https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec"
-                                    class="form-input">
-                            </div>
-
-                            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-                                <button class="btn btn-primary" onclick="testConnection()">
-                                    <svg fill="currentColor" viewBox="0 0 20 20" width="20" height="20">
-                                        <path fill-rule="evenodd"
-                                            d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" />
-                                    </svg>
-                                    Test kết nối
-                                </button>
-                                <button class="btn btn-success" onclick="saveSettings()">
-                                    <svg fill="currentColor" viewBox="0 0 20 20" width="20" height="20">
-                                        <path
-                                            d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6h5a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2h5v5.586l-1.293-1.293zM9 4a1 1 0 012 0v2H9V4z" />
-                                    </svg>
-                                    Lưu cài đặt
-                                </button>
-                            </div>
-
-                            <div id="connectionStatus" style="margin-top: 1rem; display: none;">
-                                <!-- Trạng thái kết nối sẽ hiển thị ở đây -->
-                            </div>
-                        </div>
-
-                        <!-- User Information -->
-                        <div
-                            style="background: var(--surface); padding: 2rem; border-radius: 0.75rem; box-shadow: var(--shadow);">
-                            <h3 style="margin-bottom: 1rem;">Thông Tin Người Dùng</h3>
-
-                            <div
-                                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
-                                <div class="form-group">
-                                    <label class="form-label">Tên người kiểm kê:</label>
-                                    <input type="text" id="userName" placeholder="Nhập tên của bạn" class="form-input">
-                                </div>
-
-                                <div class="form-group">
-                                    <label class="form-label">Bộ phận:</label>
-                                    <input type="text" id="userDepartment" placeholder="Ví dụ: Kế toán"
-                                        class="form-input">
-                                </div>
-
-                                <div class="form-group">
-                                    <label class="form-label">Vị trí kiểm kê:</label>
-                                    <select id="userLocation" class="form-input">
-                                        <option value="">Chọn vị trí</option>
-                                        <option value="Produce">Produce</option>
-                                        <option value="SMT">SMT</option>
-                                        <option value="QTS">QTS</option>
-                                        <option value="QC">QC</option>
-                                        <option value="Warehouse">Warehouse</option>
-                                        <option value="100% Office">100% Office</option>
-                                        <option value="Canteen">Canteen</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- App Settings -->
-                        <div
-                            style="background: var(--surface); padding: 2rem; border-radius: 0.75rem; box-shadow: var(--shadow);">
-                            <h3 style="margin-bottom: 1rem;">Cài Đặt Ứng Dụng</h3>
-
-                            <div style="display: grid; gap: 1rem;">
-                                <div style="display: flex; justify-content: space-between; align-items: center;">
-                                    <div>
-                                        <strong>Âm thanh thông báo</strong>
-                                        <p style="color: var(--secondary); font-size: 0.875rem;">Phát âm thanh khi quét
-                                            QR thành công</p>
-                                    </div>
-                                    <label
-                                        style="position: relative; display: inline-block; width: 60px; height: 34px;">
-                                        <input type="checkbox" id="soundEnabled"
-                                            style="opacity: 0; width: 0; height: 0;">
-                                        <span
-                                            style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px;">
-                                            <span
-                                                style="position: absolute; content: ''; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%;"></span>
-                                        </span>
-                                    </label>
-                                </div>
-
-                                <div style="display: flex; justify-content: space-between; align-items: center;">
-                                    <div>
-                                        <strong>Tự động focus camera</strong>
-                                        <p style="color: var(--secondary); font-size: 0.875rem;">Tự động focus camera
-                                            khi quét QR</p>
-                                    </div>
-                                    <label
-                                        style="position: relative; display: inline-block; width: 60px; height: 34px;">
-                                        <input type="checkbox" id="autoFocus" style="opacity: 0; width: 0; height: 0;"
-                                            checked>
-                                        <span
-                                            style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px;">
-                                            <span
-                                                style="position: absolute; content: ''; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%;"></span>
-                                        </span>
-                                    </label>
-                                </div>
-
-                                <div>
-                                    <label class="form-label">Kích thước QR Code (px):</label>
-                                    <input type="range" id="qrSize" min="128" max="512" value="256" class="form-input">
-                                    <div
-                                        style="text-align: center; color: var(--secondary); font-size: 0.875rem; margin-top: 0.5rem;">
-                                        <span id="qrSizeValue">256</span>px
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Data Management -->
-                        <div
-                            style="background: var(--surface); padding: 2rem; border-radius: 0.75rem; box-shadow: var(--shadow);">
-                            <h3 style="margin-bottom: 1rem;">Quản Lý Dữ Liệu</h3>
-
-                            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-                                <button class="btn btn-secondary" onclick="clearCache()">
-                                    <svg fill="currentColor" viewBox="0 0 20 20" width="20" height="20">
-                                        <path fill-rule="evenodd" d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
-                                        <path fill-rule="evenodd"
-                                            d="M4 5a2 2 0 012-2v1a1 1 0 001 1h6a1 1 0 001-1V3a2 2 0 012 2v6.5a1.5 1.5 0 01-1.5 1.5h-.501a2.01 2.01 0 00-.499.123 1.5 1.5 0 11-2.122-2.12c.054.067.118.128.19.183V5a1 1 0 00-1-1H7a1 1 0 00-1 1v5.5a1.5 1.5 0 11-2 0V5z" />
-                                    </svg>
-                                    Xóa cache
-                                </button>
-                                <button class="btn btn-success" onclick="backupData()">
-                                    <svg fill="currentColor" viewBox="0 0 20 20" width="20" height="20">
-                                        <path
-                                            d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6h5a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2h5v5.586l-1.293-1.293z" />
-                                    </svg>
-                                    Backup dữ liệu
-                                </button>
-                                <input type="file" id="restoreFile" accept=".json" style="display: none;"
-                                    onchange="restoreData(this)">
-                                <button class="btn btn-warning"
-                                    onclick="document.getElementById('restoreFile').click()">
-                                    <svg fill="currentColor" viewBox="0 0 20 20" width="20" height="20">
-                                        <path fill-rule="evenodd"
-                                            d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" />
-                                    </svg>
-                                    Khôi phục
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <div class="form-group" style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #e5e7eb;">
+                <button class="btn btn-warning btn-full" onclick="clearAllData()">
+                    🗑️ Xóa tất cả dữ liệu
+                </button>
+                <button class="btn btn-success btn-full" onclick="resetInventory()">
+                    🔄 Reset kỳ kiểm kê mới
+                </button>
             </div>
         </div>
     </div>
-
-    <!-- Asset Detail Modal -->
-    <div id="assetModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title">Chi Tiết Tài Sản</h2>
-                <button class="modal-close" onclick="closeModal('assetModal')">&times;</button>
-            </div>
-            <div id="assetModalContent">
-                <!-- Nội dung chi tiết tài sản sẽ được load ở đây -->
-            </div>
-        </div>
-    </div>
-
-    <!-- QR Code Libraries -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
     <script>
         // ====================================
-        // APPLICATION STATE & CONFIGURATION
+        // GLOBAL VARIABLES
         // ====================================
 
-        class AssetManager {
-            constructor() {
-                this.assets = [];
-                this.inventoryData = [];
-                this.currentUser = {
-                    name: '',
-                    department: '',
-                    location: ''
-                };
-                this.settings = {
-                    apiUrl: '',
-                    soundEnabled: true,
-                    autoFocus: true,
-                    qrSize: 256
-                };
-                this.scanner = null;
-                this.isScanning = false;
-
-                this.init();
-            }
-
-            init() {
-                this.loadSettings();
-                this.setupEventListeners();
-                this.initializeNavigation();
-                this.loadDashboard();
-
-                // Service Worker for PWA
-                if ('serviceWorker' in navigator) {
-                    navigator.serviceWorker.register('sw.js').catch(console.error);
-                }
-            }
-
-            // ====================================
-            // SETTINGS & STORAGE
-            // ====================================
-
-            loadSettings() {
-                const saved = localStorage.getItem('assetManagerSettings');
-                if (saved) {
-                    this.settings = {
-                        ...this.settings,
-                        ...JSON.parse(saved)
-                    };
-                }
-
-                const savedUser = localStorage.getItem('assetManagerUser');
-                if (savedUser) {
-                    this.currentUser = {
-                        ...this.currentUser,
-                        ...JSON.parse(savedUser)
-                    };
-                }
-
-                this.applySettings();
-            }
-
-            saveSettings() {
-                // Get values from form
-                this.settings.apiUrl = document.getElementById('apiUrl').value;
-                this.settings.soundEnabled = document.getElementById('soundEnabled').checked;
-                this.settings.autoFocus = document.getElementById('autoFocus').checked;
-                this.settings.qrSize = parseInt(document.getElementById('qrSize').value);
-
-                this.currentUser.name = document.getElementById('userName').value;
-                this.currentUser.department = document.getElementById('userDepartment').value;
-                this.currentUser.location = document.getElementById('userLocation').value;
-
-                localStorage.setItem('assetManagerSettings', JSON.stringify(this.settings));
-                localStorage.setItem('assetManagerUser', JSON.stringify(this.currentUser));
-
-                this.showAlert('Đã lưu cài đặt thành công!', 'success');
-            }
-
-            applySettings() {
-                // Apply to form
-                document.getElementById('apiUrl').value = this.settings.apiUrl || '';
-                document.getElementById('soundEnabled').checked = this.settings.soundEnabled;
-                document.getElementById('autoFocus').checked = this.settings.autoFocus;
-                document.getElementById('qrSize').value = this.settings.qrSize;
-                document.getElementById('qrSizeValue').textContent = this.settings.qrSize;
-
-                document.getElementById('userName').value = this.currentUser.name || '';
-                document.getElementById('userDepartment').value = this.currentUser.department || '';
-                document.getElementById('userLocation').value = this.currentUser.location || '';
-            }
-
-            // ====================================
-            // NAVIGATION & UI
-            // ====================================
-
-            setupEventListeners() {
-                // Menu toggle
-                document.getElementById('menuToggle').addEventListener('click', () => {
-                    this.toggleSidebar();
-                });
-
-                // Nav items
-                document.querySelectorAll('.nav-item').forEach(item => {
-                    item.addEventListener('click', (e) => {
-                        const page = e.currentTarget.dataset.page;
-                        if (page) this.navigateTo(page);
-                    });
-                });
-
-                // Dashboard buttons
-                document.querySelectorAll('[data-page]').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        const page = e.currentTarget.dataset.page;
-                        if (page) this.navigateTo(page);
-                    });
-                });
-
-                // QR size slider
-                document.getElementById('qrSize').addEventListener('input', (e) => {
-                    document.getElementById('qrSizeValue').textContent = e.target.value;
-                });
-
-                // Search
-                document.getElementById('searchAssets').addEventListener('input', (e) => {
-                    this.searchAssets(e.target.value);
-                });
-
-                // Scanner buttons
-                document.getElementById('startScanBtn').addEventListener('click', () => {
-                    this.startScanning();
-                });
-
-                document.getElementById('stopScanBtn').addEventListener('click', () => {
-                    this.stopScanning();
-                });
-
-                // Close modal on click outside
-                document.addEventListener('click', (e) => {
-                    if (e.target.classList.contains('modal')) {
-                        this.closeModal(e.target.id);
-                    }
-                });
-            }
-
-            initializeNavigation() {
-                // Set active nav item on page load
-                this.setActiveNav('dashboard');
-            }
-
-            toggleSidebar() {
-                const sidebar = document.getElementById('sidebar');
-                const mainContent = document.getElementById('mainContent');
-
-                sidebar.classList.toggle('open');
-
-                // Auto-close sidebar on mobile after navigation
-                if (window.innerWidth < 768) {
-                    setTimeout(() => {
-                        sidebar.classList.remove('open');
-                    }, 3000);
-                }
-            }
-
-            navigateTo(pageId) {
-                // Hide all pages
-                document.querySelectorAll('.page').forEach(page => {
-                    page.classList.remove('active');
-                });
-
-                // Show target page
-                const targetPage = document.getElementById(pageId);
-                if (targetPage) {
-                    targetPage.classList.add('active');
-                    this.setActiveNav(pageId);
-
-                    // Load page-specific data
-                    this.onPageLoad(pageId);
-
-                    // Close sidebar on mobile
-                    if (window.innerWidth < 768) {
-                        document.getElementById('sidebar').classList.remove('open');
-                    }
-                }
-            }
-
-            setActiveNav(pageId) {
-                document.querySelectorAll('.nav-item').forEach(item => {
-                    item.classList.remove('active');
-                });
-
-                document.querySelector(`[data-page="${pageId}"]`).classList.add('active');
-            }
-
-            onPageLoad(pageId) {
-                switch (pageId) {
-                    case 'dashboard':
-                        this.loadDashboard();
-                        break;
-                    case 'assets':
-                        this.loadAssets();
-                        break;
-                    case 'scanner':
-                        this.initScanner();
-                        break;
-                    case 'inventory':
-                        this.loadInventoryHistory();
-                        break;
-                    case 'settings':
-                        this.applySettings();
-                        break;
-                }
-            }
-
-            // ====================================
-            // API & DATA MANAGEMENT
-            // ====================================
-
-            async apiCall(endpoint, method = 'GET', data = null) {
-                if (!this.settings.apiUrl) {
-                    this.showAlert('Vui lòng cấu hình Google Apps Script URL trong Cài đặt', 'error');
-                    return null;
-                }
-
-                try {
-                    const options = {
-                        method: method,
-                        headers: {
-                            'Content-Type': 'application/json',
-                        }
-                    };
-
-                    if (data && method !== 'GET') {
-                        options.body = JSON.stringify(data);
-                    }
-
-                    const url = method === 'GET' && data ?
-                        `${this.settings.apiUrl}?${new URLSearchParams(data).toString()}` :
-                        this.settings.apiUrl;
-
-                    const response = await fetch(url, options);
-                    const result = await response.json();
-
-                    if (!response.ok) {
-                        throw new Error(result.error || 'API call failed');
-                    }
-
-                    return result;
-                } catch (error) {
-                    console.error('API Error:', error);
-                    this.showAlert(`Lỗi API: ${error.message}`, 'error');
-                    return null;
-                }
-            }
-
-            async loadAssets() {
-                this.showLoading('assetsLoading', true);
-
-                try {
-                    const result = await this.apiCall('', 'GET', {
-                        action: 'getAssets'
-                    });
-                    if (result && result.success) {
-                        this.assets = result.data;
-                        this.renderAssets();
-                        this.updateDashboardStats();
-                    }
-                } catch (error) {
-                    console.error('Load assets error:', error);
-                    this.showAlert('Không thể tải danh sách tài sản', 'error');
-                } finally {
-                    this.showLoading('assetsLoading', false);
-                }
-            }
-
-            async testConnection() {
-                if (!this.settings.apiUrl) {
-                    this.showAlert('Vui lòng nhập Google Apps Script URL', 'warning');
-                    return;
-                }
-
-                const statusDiv = document.getElementById('connectionStatus');
-                statusDiv.style.display = 'block';
-                statusDiv.innerHTML = '<div class="alert alert-warning">Đang kiểm tra kết nối...</div>';
-
-                try {
-                    const result = await this.apiCall('', 'GET', {
-                        action: 'test'
-                    });
-                    if (result && result.success) {
-                        statusDiv.innerHTML =
-                            '<div class="alert alert-success">Kết nối thành công! API hoạt động bình thường.</div>';
-                    } else {
-                        statusDiv.innerHTML =
-                            '<div class="alert alert-error">Kết nối thất bại. Vui lòng kiểm tra lại URL.</div>';
-                    }
-                } catch (error) {
-                    statusDiv.innerHTML = `<div class="alert alert-error">Lỗi kết nối: ${error.message}</div>`;
-                }
-            }
-
-            // ====================================
-            // DASHBOARD
-            // ====================================
-
-            loadDashboard() {
-                this.updateDashboardStats();
-
-                // Load recent activity if we have assets data
-                if (this.assets.length > 0) {
-                    this.loadInventoryData();
-                }
-            }
-
-            updateDashboardStats() {
-                const totalAssets = this.assets.length;
-                const checkedAssets = this.assets.filter(asset => asset.last_checked).length;
-                const uncheckedAssets = totalAssets - checkedAssets;
-                const progress = totalAssets > 0 ? Math.round((checkedAssets / totalAssets) * 100) : 0;
-
-                document.getElementById('totalAssets').textContent = totalAssets.toLocaleString();
-                document.getElementById('checkedAssets').textContent = checkedAssets.toLocaleString();
-                document.getElementById('uncheckedAssets').textContent = uncheckedAssets.toLocaleString();
-                document.getElementById('inventoryProgress').textContent = `${progress}%`;
-            }
-
-            async loadInventoryData() {
-                try {
-                    const result = await this.apiCall('', 'GET', {
-                        action: 'getInventoryHistory'
-                    });
-                    if (result && result.success) {
-                        this.inventoryData = result.data;
-                    }
-                } catch (error) {
-                    console.error('Load inventory error:', error);
-                }
-            }
-
-            // ====================================
-            // ASSET MANAGEMENT
-            // ====================================
-
-            renderAssets(assetsToRender = null) {
-                const container = document.getElementById('assetsGrid');
-                const assets = assetsToRender || this.assets;
-
-                if (assets.length === 0) {
-                    container.innerHTML = `
-                        <div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: var(--secondary);">
-                            <svg style="width: 4rem; height: 4rem; margin-bottom: 1rem; opacity: 0.5;" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
-                                <path fill-rule="evenodd" d="M4 5a2 2 0 012-2v1a1 1 0 001 1h6a1 1 0 001-1V3a2 2 0 012 2v6.5a1.5 1.5 0 01-1.5 1.5h-.501a2.01 2.01 0 00-.499.123 1.5 1.5 0 11-2.122-2.12c.054.067.118.128.19.183V5a1 1 0 00-1-1H7a1 1 0 00-1 1v5.5a1.5 1.5 0 11-2 0V5z"/>
-                            </svg>
-                            <h3>Chưa có dữ liệu tài sản</h3>
-                            <p>Vui lòng cấu hình Google Apps Script trong phần Cài đặt</p>
-                        </div>
-                    `;
-                    return;
-                }
-
-                container.innerHTML = assets.map(asset => `
-                    <div class="asset-card">
-                        <div class="asset-header">
-                            <div class="asset-code">${asset.code || 'N/A'}</div>
-                            <div class="asset-name">${asset.name_vi || asset.name_en || 'Không có tên'}</div>
-                        </div>
-                        <div class="asset-body">
-                            <div class="asset-info">
-                                <div class="asset-info-item">
-                                    <div class="asset-info-label">Loại:</div>
-                                    <div class="asset-info-value">${asset.category || 'N/A'}</div>
-                                </div>
-                                <div class="asset-info-item">
-                                    <div class="asset-info-label">Vị trí:</div>
-                                    <div class="asset-info-value">${asset.location || 'N/A'}</div>
-                                </div>
-                                <div class="asset-info-item">
-                                    <div class="asset-info-label">Model:</div>
-                                    <div class="asset-info-value">${asset.model || 'N/A'}</div>
-                                </div>
-                                <div class="asset-info-item">
-                                    <div class="asset-info-label">Trạng thái:</div>
-                                    <div class="asset-info-value">
-                                        <span class="status-badge ${asset.last_checked ? 'status-checked' : 'status-unchecked'}">
-                                            ${asset.last_checked ? '✓ Đã kiểm kê' : '⚠ Chưa kiểm kê'}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="asset-actions">
-                                <button class="btn btn-outline" onclick="assetManager.viewAssetDetails('${asset.code}')">
-                                    <svg fill="currentColor" viewBox="0 0 20 20" width="16" height="16">
-                                        <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
-                                        <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"/>
-                                    </svg>
-                                    Chi tiết
-                                </button>
-                                <button class="btn btn-primary" onclick="assetManager.generateQRForAsset('${asset.code}')">
-                                    <svg fill="currentColor" viewBox="0 0 20 20" width="16" height="16">
-                                        <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h3a1 1 0 000 2H6.414l2.293 2.293a1 1 0 11-1.414 1.414L5 6.414V8a1 1 0 01-2 0V4z"/>
-                                    </svg>
-                                    QR
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                `).join('');
-            }
-
-            searchAssets(query) {
-                if (!query.trim()) {
-                    this.renderAssets();
-                    return;
-                }
-
-                const filtered = this.assets.filter(asset => {
-                    return Object.values(asset).some(value =>
-                        value && value.toString().toLowerCase().includes(query.toLowerCase())
-                    );
-                });
-
-                this.renderAssets(filtered);
-            }
-
-            viewAssetDetails(assetCode) {
-                const asset = this.assets.find(a => a.code === assetCode);
-                if (!asset) return;
-
-                const modalContent = document.getElementById('assetModalContent');
-                modalContent.innerHTML = `
-                    <div style="display: grid; gap: 1.5rem;">
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-                            <div>
-                                <strong>Mã tài sản:</strong><br>
-                                <span style="color: var(--primary); font-weight: 600; font-size: 1.125rem;">${asset.code || 'N/A'}</span>
-                            </div>
-                            <div>
-                                <strong>Tên tài sản (Tiếng Việt):</strong><br>
-                                ${asset.name_vi || 'N/A'}
-                            </div>
-                            <div>
-                                <strong>Tên tài sản (English):</strong><br>
-                                ${asset.name_en || 'N/A'}
-                            </div>
-                            <div>
-                                <strong>Loại tài sản:</strong><br>
-                                ${asset.category || 'N/A'}
-                            </div>
-                            <div>
-                                <strong>Model:</strong><br>
-                                ${asset.model || 'N/A'}
-                            </div>
-                            <div>
-                                <strong>Serial:</strong><br>
-                                ${asset.serial || 'N/A'}
-                            </div>
-                            <div>
-                                <strong>Tech Code:</strong><br>
-                                ${asset.tech_code || 'N/A'}
-                            </div>
-                            <div>
-                                <strong>Vị trí:</strong><br>
-                                ${asset.location || 'N/A'}
-                            </div>
-                            <div>
-                                <strong>Nhà cung cấp:</strong><br>
-                                ${asset.supplier || 'N/A'}
-                            </div>
-                            <div>
-                                <strong>Giá trị:</strong><br>
-                                ${asset.value ? asset.value.toLocaleString() + ' VNĐ' : 'N/A'}
-                            </div>
-                            <div>
-                                <strong>Ngày bắt đầu:</strong><br>
-                                ${asset.start_date || 'N/A'}
-                            </div>
-                            <div>
-                                <strong>Trạng thái kiểm kê:</strong><br>
-                                <span class="status-badge ${asset.last_checked ? 'status-checked' : 'status-unchecked'}">
-                                    ${asset.last_checked ? '✓ Đã kiểm kê' : '⚠ Chưa kiểm kê'}
-                                </span>
-                            </div>
-                        </div>
-                        
-                        ${asset.last_checked ? `
-                            <div style="background: var(--background); padding: 1rem; border-radius: 0.5rem;">
-                                <strong>Thông tin kiểm kê:</strong><br>
-                                <div style="margin-top: 0.5rem; color: var(--secondary);">
-                                    Người kiểm kê: ${asset.checked_by || 'N/A'}<br>
-                                    Thời gian: ${new Date(asset.last_checked).toLocaleString('vi-VN')}<br>
-                                    Ghi chú: ${asset.inventory_notes || 'Không có ghi chú'}
-                                </div>
-                            </div>
-                        ` : ''}
-                        
-                        <div style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center;">
-                            <button class="btn btn-primary" onclick="assetManager.generateQRForAsset('${asset.code}')">
-                                <svg fill="currentColor" viewBox="0 0 20 20" width="20" height="20">
-                                    <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h3a1 1 0 000 2H6.414l2.293 2.293a1 1 0 11-1.414 1.414L5 6.414V8a1 1 0 01-2 0V4z"/>
-                                </svg>
-                                Tạo QR Code
-                            </button>
-                            <button class="btn btn-success" onclick="assetManager.updateAssetInventory('${asset.code}')">
-                                <svg fill="currentColor" viewBox="0 0 20 20" width="20" height="20">
-                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/>
-                                </svg>
-                                ${asset.last_checked ? 'Cập nhật kiểm kê' : 'Đánh dấu đã kiểm kê'}
-                            </button>
-                        </div>
-                    </div>
-                `;
-
-                this.openModal('assetModal');
-            }
-
-            // ====================================
-            // QR CODE SCANNER
-            // ====================================
-
-            async initScanner() {
-                if (this.scanner) {
-                    await this.stopScanning();
-                }
-
-                // Check if camera is available
-                try {
-                    const cameras = await Html5Qrcode.getCameras();
-                    if (cameras && cameras.length > 0) {
-                        this.showAlert('Camera sẵn sàng. Nhấn "Bắt đầu quét" để bắt đầu.', 'success');
-                    }
-                } catch (error) {
-                    this.showAlert('Không thể truy cập camera. Vui lòng cho phép quyền camera.', 'error');
-                    console.error('Camera error:', error);
-                }
-            }
-
-            async startScanning() {
-                try {
-                    if (!this.scanner) {
-                        this.scanner = new Html5Qrcode("reader");
-                    }
-
-                    if (this.isScanning) {
-                        await this.stopScanning();
-                    }
-
-                    const cameras = await Html5Qrcode.getCameras();
-                    if (cameras.length === 0) {
-                        throw new Error('Không tìm thấy camera');
-                    }
-
-                    // Prefer back camera
-                    const cameraId = cameras.find(camera =>
-                        camera.label.toLowerCase().includes('back') ||
-                        camera.label.toLowerCase().includes('environment')
-                    ) ? .id || cameras[0].id;
-
-                    const config = {
-                        fps: 10,
-                        qrbox: {
-                            width: 250,
-                            height: 250
-                        },
-                        aspectRatio: 1.0,
-                        experimentalFeatures: {
-                            useBarCodeDetectorIfSupported: true
-                        }
-                    };
-
-                    await this.scanner.start(
-                        cameraId,
-                        config,
-                        (decodedText, decodedResult) => {
-                            this.onQRScanned(decodedText);
-                        },
-                        (errorMessage) => {
-                            // Silent error handling
-                        }
-                    );
-
-                    this.isScanning = true;
-                    document.getElementById('startScanBtn').style.display = 'none';
-                    document.getElementById('stopScanBtn').style.display = 'inline-flex';
-                    document.getElementById('scannerAlert').style.display = 'none';
-
-                } catch (error) {
-                    console.error('Scanner error:', error);
-                    this.showAlert(`Lỗi camera: ${error.message}`, 'error');
-                    document.getElementById('scannerAlert').style.display = 'block';
-                }
-            }
-
-            async stopScanning() {
-                if (this.scanner && this.isScanning) {
-                    try {
-                        await this.scanner.stop();
-                        this.isScanning = false;
-
-                        document.getElementById('startScanBtn').style.display = 'inline-flex';
-                        document.getElementById('stopScanBtn').style.display = 'none';
-
-                    } catch (error) {
-                        console.error('Stop scanner error:', error);
-                    }
-                }
-            }
-
-            async onQRScanned(qrData) {
-                // Stop scanning temporarily
-                await this.stopScanning();
-
-                // Play sound if enabled
-                if (this.settings.soundEnabled) {
-                    this.playNotificationSound();
-                }
-
-                // Find asset by QR data
-                const asset = this.findAssetByQR(qrData);
-
-                if (asset) {
-                    this.showScannedAsset(asset);
-                } else {
-                    this.showAlert('Không tìm thấy tài sản với mã QR này: ' + qrData, 'warning');
-
-                    // Restart scanning after 2 seconds
-                    setTimeout(() => {
-                        this.startScanning();
-                    }, 2000);
-                }
-            }
-
-            findAssetByQR(qrData) {
-                // QR data could be just the asset code, or include additional info
-                const assetCode = qrData.split('|')[0] || qrData;
-                return this.assets.find(asset => asset.code === assetCode);
-            }
-
-            showScannedAsset(asset) {
-                const resultDiv = document.getElementById('scannedResult');
-                resultDiv.innerHTML = `
-                    <div style="background: var(--surface); padding: 2rem; border-radius: 0.75rem; box-shadow: var(--shadow); border: 2px solid var(--success);">
-                        <div style="text-align: center; margin-bottom: 1.5rem;">
-                            <div style="width: 60px; height: 60px; background: var(--success); border-radius: 50%; margin: 0 auto 1rem; display: flex; align-items: center; justify-content: center;">
-                                <svg fill="white" viewBox="0 0 20 20" width="30" height="30">
-                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/>
-                                </svg>
-                            </div>
-                            <h3 style="color: var(--success); margin-bottom: 0.5rem;">Quét thành công!</h3>
-                            <p style="color: var(--secondary);">Đã tìm thấy tài sản</p>
-                        </div>
-                        
-                        <div style="text-align: center; margin-bottom: 2rem;">
-                            <div style="font-size: 1.5rem; font-weight: bold; color: var(--primary); margin-bottom: 0.5rem;">
-                                ${asset.code}
-                            </div>
-                            <div style="font-size: 1.125rem; margin-bottom: 1rem;">
-                                ${asset.name_vi || asset.name_en || 'Không có tên'}
-                            </div>
-                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.5rem; text-align: left;">
-                                <div><strong>Loại:</strong> ${asset.category || 'N/A'}</div>
-                                <div><strong>Model:</strong> ${asset.model || 'N/A'}</div>
-                                <div><strong>Vị trí:</strong> ${asset.location || 'N/A'}</div>
-                                <div><strong>Serial:</strong> ${asset.serial || 'N/A'}</div>
-                            </div>
-                        </div>
-                        
-                        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-                            <button class="btn btn-success btn-full" onclick="assetManager.confirmInventory('${asset.code}')" style="max-width: 200px;">
-                                <svg fill="currentColor" viewBox="0 0 20 20" width="20" height="20">
-                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/>
-                                </svg>
-                                Xác nhận kiểm kê
-                            </button>
-                            <button class="btn btn-outline" onclick="assetManager.viewAssetDetails('${asset.code}')" style="max-width: 150px;">
-                                Chi tiết
-                            </button>
-                            <button class="btn btn-secondary" onclick="assetManager.continueScan()" style="max-width: 150px;">
-                                Tiếp tục quét
-                            </button>
-                        </div>
-                    </div>
-                `;
-
-                resultDiv.style.display = 'block';
-            }
-
-            async confirmInventory(assetCode) {
-                if (!this.currentUser.name) {
-                    this.showAlert('Vui lòng cấu hình thông tin người dùng trong Cài đặt', 'warning');
-                    return;
-                }
-
-                try {
-                    const inventoryData = {
-                        assetCode: assetCode,
-                        checkedBy: this.currentUser.name,
-                        department: this.currentUser.department,
-                        location: this.currentUser.location,
-                        timestamp: new Date().toISOString(),
-                        notes: 'Kiểm kê bằng QR Scanner'
-                    };
-
-                    const result = await this.apiCall('', 'POST', {
-                        action: 'updateInventory',
-                        data: inventoryData
-                    });
-
-                    if (result && result.success) {
-                        // Update local asset data
-                        const asset = this.assets.find(a => a.code === assetCode);
-                        if (asset) {
-                            asset.last_checked = inventoryData.timestamp;
-                            asset.checked_by = inventoryData.checkedBy;
-                            asset.inventory_notes = inventoryData.notes;
-                        }
-
-                        this.showAlert('Đã cập nhật kiểm kê thành công!', 'success');
-                        this.updateDashboardStats();
-
-                        // Auto continue scanning after 1.5 seconds
-                        setTimeout(() => {
-                            this.continueScan();
-                        }, 1500);
-                    }
-                } catch (error) {
-                    console.error('Update inventory error:', error);
-                    this.showAlert('Lỗi cập nhật kiểm kê', 'error');
-                }
-            }
-
-            continueScan() {
-                document.getElementById('scannedResult').style.display = 'none';
-                this.startScanning();
-            }
-
-            // ====================================
-            // QR CODE GENERATION
-            // ====================================
-
-            async generateSingleQR() {
-                const assetCode = document.getElementById('assetCodeInput').value.trim();
-                if (!assetCode) {
-                    this.showAlert('Vui lòng nhập mã tài sản', 'warning');
-                    return;
-                }
-
-                const asset = this.assets.find(a => a.code === assetCode);
-                if (!asset) {
-                    this.showAlert('Không tìm thấy tài sản với mã: ' + assetCode, 'error');
-                    return;
-                }
-
-                await this.generateQRForAsset(assetCode);
-            }
-
-            async generateQRForAsset(assetCode) {
-                const asset = this.assets.find(a => a.code === assetCode);
-                if (!asset) return;
-
-                try {
-                    const qrContainer = document.getElementById('singleQRResult') ||
-                        document.createElement('div');
-
-                    if (!document.getElementById('singleQRResult')) {
-                        qrContainer.id = 'singleQRResult';
-                        qrContainer.className = 'qr-code-container';
-                        qrContainer.style.display = 'block';
-                        document.querySelector('#qr-generator .page, #assetModalContent').appendChild(qrContainer);
-                    }
-
-                    // QR data includes asset code and basic info
-                    const qrData = `${asset.code}|${asset.name_vi || asset.name_en || ''}|${asset.location || ''}`;
-
-                    qrContainer.innerHTML = `
-                        <h3 style="margin-bottom: 1rem;">QR Code - ${asset.code}</h3>
-                        <div id="qrcode-${asset.code}" style="margin: 1rem auto;"></div>
-                        <p style="margin: 1rem 0; color: var(--secondary);">${asset.name_vi || asset.name_en || 'Không có tên'}</p>
-                        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-                            <button class="btn btn-primary" onclick="assetManager.downloadQR('${asset.code}')">
-                                <svg fill="currentColor" viewBox="0 0 20 20" width="20" height="20">
-                                    <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"/>
-                                </svg>
-                                Tải xuống
-                            </button>
-                            <button class="btn btn-secondary" onclick="assetManager.printQR('${asset.code}')">
-                                <svg fill="currentColor" viewBox="0 0 20 20" width="20" height="20">
-                                    <path fill-rule="evenodd" d="M5 4v3H4a2 2 0 00-2 2v3a2 2 0 002 2h1v2a2 2 0 002 2h6a2 2 0 002-2v-2h1a2 2 0 002-2V9a2 2 0 00-2-2h-1V4a2 2 0 00-2-2H7a2 2 0 00-2 2zm8 0H7v3h6V4zm0 8H7v4h6v-4z"/>
-                                </svg>
-                                In QR
-                            </button>
-                        </div>
-                    `;
-
-                    // Generate QR code
-                    QRCode.toCanvas(
-                        document.getElementById(`qrcode-${asset.code}`),
-                        qrData, {
-                            width: this.settings.qrSize,
-                            height: this.settings.qrSize,
-                            colorDark: '#000000',
-                            colorLight: '#ffffff',
-                            correctLevel: QRCode.CorrectLevel.H
-                        }
-                    );
-
-                    qrContainer.style.display = 'block';
-
-                } catch (error) {
-                    console.error('QR generation error:', error);
-                    this.showAlert('Lỗi tạo QR code', 'error');
-                }
-            }
-
-            async generateAllQR() {
-                if (this.assets.length === 0) {
-                    this.showAlert('Không có dữ liệu tài sản để tạo QR', 'warning');
-                    return;
-                }
-
-                const progressDiv = document.getElementById('qrGenerationProgress');
-                const progressBar = document.getElementById('progressBar');
-                const progressText = document.getElementById('progressText');
-                const downloadBtn = document.getElementById('downloadPDFBtn');
-
-                progressDiv.style.display = 'block';
-                downloadBtn.style.display = 'none';
-
-                this.qrDataCollection = [];
-
-                for (let i = 0; i < this.assets.length; i++) {
-                    const asset = this.assets[i];
-                    const progress = Math.round(((i + 1) / this.assets.length) * 100);
-
-                    progressBar.style.width = `${progress}%`;
-                    progressText.textContent = `${i + 1}/${this.assets.length}`;
-
-                    try {
-                        const qrData =
-                            `${asset.code}|${asset.name_vi || asset.name_en || ''}|${asset.location || ''}`;
-
-                        // Generate QR as data URL
-                        const qrCanvas = document.createElement('canvas');
-                        await QRCode.toCanvas(qrCanvas, qrData, {
-                            width: 200,
-                            height: 200,
-                            colorDark: '#000000',
-                            colorLight: '#ffffff',
-                            correctLevel: QRCode.CorrectLevel.H
-                        });
-
-                        this.qrDataCollection.push({
-                            asset: asset,
-                            qrDataUrl: qrCanvas.toDataURL()
-                        });
-
-                    } catch (error) {
-                        console.error(`Error generating QR for ${asset.code}:`, error);
-                    }
-
-                    // Small delay to prevent blocking
-                    if (i % 10 === 0) {
-                        await new Promise(resolve => setTimeout(resolve, 50));
-                    }
-                }
-
-                downloadBtn.style.display = 'inline-flex';
-                this.showAlert(`Đã tạo thành công ${this.qrDataCollection.length} QR code!`, 'success');
-            }
-
-            downloadQR(assetCode) {
-                const canvas = document.querySelector(`#qrcode-${assetCode} canvas`);
-                if (!canvas) return;
-
-                const link = document.createElement('a');
-                link.download = `QR_${assetCode}.png`;
-                link.href = canvas.toDataURL();
-                link.click();
-            }
-
-            printQR(assetCode) {
-                const canvas = document.querySelector(`#qrcode-${assetCode} canvas`);
-                if (!canvas) return;
-
-                const printWindow = window.open('', '_blank');
-                const asset = this.assets.find(a => a.code === assetCode);
-
-                printWindow.document.write(`
-                    <html>
-                        <head>
-                            <title>QR Code - ${assetCode}</title>
-                            <style>
-                                body { font-family: Arial, sans-serif; text-align: center; margin: 20px; }
-                                .qr-container { border: 2px solid #000; padding: 20px; display: inline-block; }
-                                .asset-info { margin-top: 10px; font-size: 14px; }
-                            </style>
-                        </head>
-                        <body>
-                            <div class="qr-container">
-                                <img src="${canvas.toDataURL()}" alt="QR Code ${assetCode}">
-                                <div class="asset-info">
-                                    <strong>${assetCode}</strong><br>
-                                    ${asset ? asset.name_vi || asset.name_en || '' : ''}<br>
-                                    ${asset ? asset.location || '' : ''}
-                                </div>
-                            </div>
-                        </body>
-                    </html>
-                `);
-
-                printWindow.document.close();
-                printWindow.print();
-            }
-
-            downloadQRPDF() {
-                if (!this.qrDataCollection || this.qrDataCollection.length === 0) {
-                    this.showAlert('Chưa có QR code nào được tạo', 'warning');
-                    return;
-                }
-
-                const {
-                    jsPDF
-                } = window.jspdf;
-                const pdf = new jsPDF('p', 'mm', 'a4');
-
-                const pageWidth = pdf.internal.pageSize.getWidth();
-                const pageHeight = pdf.internal.pageSize.getHeight();
-                const margin = 10;
-                const qrSize = 50;
-                const cellWidth = (pageWidth - 2 * margin) / 3;
-                const cellHeight = 70;
-
-                let x = margin;
-                let y = margin;
-                let pageCount = 1;
-
-                this.qrDataCollection.forEach((item, index) => {
-                    if (y + cellHeight > pageHeight - margin) {
-                        pdf.addPage();
-                        pageCount++;
-                        y = margin;
-                    }
-
-                    // Add QR code image
-                    pdf.addImage(
-                        item.qrDataUrl,
-                        'PNG',
-                        x + (cellWidth - qrSize) / 2,
-                        y,
-                        qrSize,
-                        qrSize
-                    );
-
-                    // Add asset info
-                    pdf.setFontSize(10);
-                    pdf.text(item.asset.code || '', x + cellWidth / 2, y + qrSize + 5, {
-                        align: 'center'
-                    });
-
-                    pdf.setFontSize(8);
-                    const assetName = item.asset.name_vi || item.asset.name_en || '';
-                    if (assetName.length > 30) {
-                        pdf.text(assetName.substring(0, 30) + '...', x + cellWidth / 2, y + qrSize + 10, {
-                            align: 'center'
-                        });
-                    } else {
-                        pdf.text(assetName, x + cellWidth / 2, y + qrSize + 10, {
-                            align: 'center'
-                        });
-                    }
-
-                    pdf.text(item.asset.location || '', x + cellWidth / 2, y + qrSize + 15, {
-                        align: 'center'
-                    });
-
-                    // Move to next position
-                    x += cellWidth;
-                    if (x + cellWidth > pageWidth - margin) {
-                        x = margin;
-                        y += cellHeight;
-                    }
-                });
-
-                pdf.save('QR_Codes_All_Assets.pdf');
-                this.showAlert('Đã tải xuống file PDF thành công!', 'success');
-            }
-
-            // ====================================
-            // INVENTORY MANAGEMENT
-            // ====================================
-
-            async loadInventoryHistory() {
-                try {
-                    const result = await this.apiCall('', 'GET', {
-                        action: 'getInventoryHistory'
-                    });
-                    if (result && result.success) {
-                        this.inventoryData = result.data;
-                        this.renderInventoryHistory();
-                        this.updateInventoryStats();
-                    }
-                } catch (error) {
-                    console.error('Load inventory history error:', error);
-                    this.showAlert('Không thể tải lịch sử kiểm kê', 'error');
-                }
-            }
-
-            renderInventoryHistory() {
-                const container = document.getElementById('inventoryTable');
-
-                if (this.inventoryData.length === 0) {
-                    container.innerHTML = `
-                        <div style="padding: 3rem; text-align: center; color: var(--secondary);">
-                            <svg style="width: 4rem; height: 4rem; margin-bottom: 1rem; opacity: 0.5;" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"/>
-                            </svg>
-                            <h3>Chưa có lịch sử kiểm kê</h3>
-                            <p>Bắt đầu quét QR để tạo lịch sử kiểm kê</p>
-                        </div>
-                    `;
-                    return;
-                }
-
-                const tableHTML = `
-                    <table style="width: 100%; border-collapse: collapse;">
-                        <thead style="background: var(--background);">
-                            <tr style="border-bottom: 1px solid var(--border);">
-                                <th style="padding: 1rem; text-align: left; font-weight: 600;">Mã tài sản</th>
-                                <th style="padding: 1rem; text-align: left; font-weight: 600;">Tên tài sản</th>
-                                <th style="padding: 1rem; text-align: left; font-weight: 600;">Người kiểm kê</th>
-                                <th style="padding: 1rem; text-align: left; font-weight: 600;">Thời gian</th>
-                                <th style="padding: 1rem; text-align: left; font-weight: 600;">Vị trí</th>
-                                <th style="padding: 1rem; text-align: left; font-weight: 600;">Trạng thái</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${this.inventoryData.map(record => {
-                                const asset = this.assets.find(a => a.code === record.asset_code);
-                                return `
-                                    <tr style="border-bottom: 1px solid var(--border);">
-                                        <td style="padding: 1rem; font-weight: 500; color: var(--primary);">${record.asset_code}</td>
-                                        <td style="padding: 1rem;">${asset ? (asset.name_vi || asset.name_en) : 'N/A'}</td>
-                                        <td style="padding: 1rem;">${record.checked_by}</td>
-                                        <td style="padding: 1rem;">${new Date(record.timestamp).toLocaleString('vi-VN')}</td>
-                                        <td style="padding: 1rem;">${record.location || 'N/A'}</td>
-                                        <td style="padding: 1rem;">
-                                            <span class="status-badge status-checked">✓ Đã kiểm kê</span>
-                                        </td>
-                                    </tr>
-                                `;
-                            }).join('')}
-                        </tbody>
-                    </table>
-                `;
-
-                container.innerHTML = tableHTML;
-            }
-
-            updateInventoryStats() {
-                const statsContainer = document.getElementById('inventoryStats');
-                const totalAssets = this.assets.length;
-                const checkedAssets = this.inventoryData.length;
-                const uncheckedAssets = totalAssets - checkedAssets;
-                const progress = totalAssets > 0 ? Math.round((checkedAssets / totalAssets) * 100) : 0;
-
-                statsContainer.innerHTML = `
-                    <div class="stat-card">
-                        <div class="stat-value">${totalAssets.toLocaleString()}</div>
-                        <div class="stat-label">Tổng tài sản</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" style="color: var(--success);">${checkedAssets.toLocaleString()}</div>
-                        <div class="stat-label">Đã kiểm kê</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" style="color: var(--warning);">${uncheckedAssets.toLocaleString()}</div>
-                        <div class="stat-label">Chưa kiểm kê</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" style="color: var(--primary);">${progress}%</div>
-                        <div class="stat-label">Tiến độ hoàn thành</div>
-                    </div>
-                `;
-            }
-
-            async resetInventory() {
-                if (!confirm(
-                        'Bạn có chắc chắn muốn reset toàn bộ dữ liệu kiểm kê? Hành động này không thể hoàn tác.')) {
-                    return;
-                }
-
-                try {
-                    const result = await this.apiCall('', 'POST', {
-                        action: 'resetInventory',
-                        resetBy: this.currentUser.name || 'System',
-                        timestamp: new Date().toISOString()
-                    });
-
-                    if (result && result.success) {
-                        // Clear local inventory data
-                        this.inventoryData = [];
-                        this.assets.forEach(asset => {
-                            asset.last_checked = null;
-                            asset.checked_by = null;
-                            asset.inventory_notes = null;
-                        });
-
-                        this.renderInventoryHistory();
-                        this.updateInventoryStats();
-                        this.updateDashboardStats();
-
-                        this.showAlert('Đã reset dữ liệu kiểm kê thành công!', 'success');
-                    }
-                } catch (error) {
-                    console.error('Reset inventory error:', error);
-                    this.showAlert('Lỗi reset kiểm kê', 'error');
-                }
-            }
-
-            async exportInventory() {
-                try {
-                    const result = await this.apiCall('', 'GET', {
-                        action: 'exportInventory'
-                    });
-                    if (result && result.success) {
-                        // Create and download Excel file
-                        const blob = new Blob([result.data], {
-                            type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-                        });
-
-                        const link = document.createElement('a');
-                        link.href = URL.createObjectURL(blob);
-                        link.download = `Inventory_Export_${new Date().toISOString().split('T')[0]}.xlsx`;
-                        link.click();
-
-                        this.showAlert('Đã export Excel thành công!', 'success');
-                    }
-                } catch (error) {
-                    console.error('Export inventory error:', error);
-                    this.showAlert('Lỗi export dữ liệu', 'error');
-                }
-            }
-
-            // ====================================
-            // ASSET UPDATE & MANAGEMENT
-            // ====================================
-
-            async updateAssetInventory(assetCode) {
-                const asset = this.assets.find(a => a.code === assetCode);
-                if (!asset) return;
-
-                // Show update form
-                const modalContent = `
-                    <h3 style="margin-bottom: 1.5rem;">Cập nhật thông tin kiểm kê</h3>
-                    <div style="margin-bottom: 1rem;">
-                        <strong>Tài sản:</strong> ${asset.code} - ${asset.name_vi || asset.name_en}
-                    </div>
-                    
-                    <form id="updateInventoryForm">
-                        <div class="form-group">
-                            <label class="form-label">Tình trạng tài sản:</label>
-                            <select id="assetCondition" class="form-input">
-                                <option value="good">Tốt</option>
-                                <option value="fair">Khá</option>
-                                <option value="poor">Kém</option>
-                                <option value="damaged">Hỏng</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label class="form-label">Vị trí hiện tại:</label>
-                            <input type="text" id="currentLocation" value="${asset.location || ''}" class="form-input">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label class="form-label">Ghi chú kiểm kê:</label>
-                            <textarea id="inventoryNotes" class="form-input" rows="3" placeholder="Nhập ghi chú về tình trạng, vị trí, hoặc các vấn đề khác..."></textarea>
-                        </div>
-                        
-                        <div style="display: flex; gap: 1rem; justify-content: flex-end;">
-                            <button type="button" class="btn btn-outline" onclick="assetManager.closeModal('assetModal')">Hủy</button>
-                            <button type="button" class="btn btn-success" onclick="assetManager.saveInventoryUpdate('${assetCode}')">
-                                <svg fill="currentColor" viewBox="0 0 20 20" width="20" height="20">
-                                    <path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6h5a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2h5v5.586l-1.293-1.293z"/>
-                                </svg>
-                                Lưu cập nhật
-                            </button>
-                        </div>
-                    </form>
-                `;
-
-                document.getElementById('assetModalContent').innerHTML = modalContent;
-                this.openModal('assetModal');
-            }
-
-            async saveInventoryUpdate(assetCode) {
-                if (!this.currentUser.name) {
-                    this.showAlert('Vui lòng cấu hình thông tin người dùng trong Cài đặt', 'warning');
-                    return;
-                }
-
-                try {
-                    const inventoryData = {
-                        assetCode: assetCode,
-                        checkedBy: this.currentUser.name,
-                        department: this.currentUser.department,
-                        location: document.getElementById('currentLocation').value,
-                        condition: document.getElementById('assetCondition').value,
-                        notes: document.getElementById('inventoryNotes').value,
-                        timestamp: new Date().toISOString()
-                    };
-
-                    const result = await this.apiCall('', 'POST', {
-                        action: 'updateInventory',
-                        data: inventoryData
-                    });
-
-                    if (result && result.success) {
-                        // Update local data
-                        const asset = this.assets.find(a => a.code === assetCode);
-                        if (asset) {
-                            asset.last_checked = inventoryData.timestamp;
-                            asset.checked_by = inventoryData.checkedBy;
-                            asset.location = inventoryData.location;
-                            asset.condition = inventoryData.condition;
-                            asset.inventory_notes = inventoryData.notes;
-                        }
-
-                        this.showAlert('Đã cập nhật kiểm kê thành công!', 'success');
-                        this.closeModal('assetModal');
-                        this.updateDashboardStats();
-                        this.loadInventoryHistory();
-                    }
-                } catch (error) {
-                    console.error('Save inventory update error:', error);
-                    this.showAlert('Lỗi lưu cập nhật kiểm kê', 'error');
-                }
-            }
-
-            // ====================================
-            // UTILITY FUNCTIONS
-            // ====================================
-
-            showAlert(message, type = 'info') {
-                // Remove existing alerts
-                const existingAlerts = document.querySelectorAll('.alert-floating');
-                existingAlerts.forEach(alert => alert.remove());
-
-                const alert = document.createElement('div');
-                alert.className = `alert alert-${type} alert-floating`;
-                alert.style.cssText = `
-                    position: fixed;
-                    top: 20px;
-                    right: 20px;
-                    z-index: 10000;
-                    max-width: 300px;
-                    box-shadow: var(--shadow-lg);
-                `;
-                alert.innerHTML = `
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                        <span>${message}</span>
-                        <button onclick="this.parentElement.parentElement.remove()" 
-                                style="background: none; border: none; font-size: 1.2rem; cursor: pointer; padding: 0; margin-left: 1rem;">×</button>
-                    </div>
-                `;
-
-                document.body.appendChild(alert);
-
-                setTimeout(() => {
-                    if (alert.parentElement) {
-                        alert.remove();
-                    }
-                }, 5000);
-            }
-
-            showLoading(elementId, show) {
-                const element = document.getElementById(elementId);
-                if (element) {
-                    element.style.display = show ? 'block' : 'none';
-                }
-            }
-
-            openModal(modalId) {
-                const modal = document.getElementById(modalId);
-                if (modal) {
-                    modal.classList.add('active');
-                    document.body.style.overflow = 'hidden';
-                }
-            }
-
-            closeModal(modalId) {
-                const modal = document.getElementById(modalId);
-                if (modal) {
-                    modal.classList.remove('active');
-                    document.body.style.overflow = 'auto';
-                }
-            }
-
-            playNotificationSound() {
-                try {
-                    const audioContext = new(window.AudioContext || window.webkitAudioContext)();
-                    const oscillator = audioContext.createOscillator();
-                    const gainNode = audioContext.createGain();
-
-                    oscillator.connect(gainNode);
-                    gainNode.connect(audioContext.destination);
-
-                    oscillator.frequency.value = 800;
-                    oscillator.type = 'sine';
-
-                    gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-                    gainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.1);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
-
-                    oscillator.start(audioContext.currentTime);
-                    oscillator.stop(audioContext.currentTime + 0.3);
-                } catch (error) {
-                    console.log('Sound not available:', error);
-                }
-            }
-
-            clearCache() {
-                if (confirm('Bạn có chắc chắn muốn xóa toàn bộ cache và dữ liệu cục bộ?')) {
-                    localStorage.clear();
-                    sessionStorage.clear();
-
-                    // Clear assets data
-                    this.assets = [];
-                    this.inventoryData = [];
-
-                    this.showAlert('Đã xóa cache thành công!', 'success');
-
-                    // Reload page after 1 second
-                    setTimeout(() => {
-                        location.reload();
-                    }, 1000);
-                }
-            }
-
-            backupData() {
-                const backupData = {
-                    settings: this.settings,
-                    user: this.currentUser,
-                    assets: this.assets,
-                    inventory: this.inventoryData,
-                    timestamp: new Date().toISOString()
-                };
-
-                const blob = new Blob([JSON.stringify(backupData, null, 2)], {
-                    type: 'application/json'
-                });
-
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
-                link.download = `AssetManager_Backup_${new Date().toISOString().split('T')[0]}.json`;
-                link.click();
-
-                this.showAlert('Đã backup dữ liệu thành công!', 'success');
-            }
-
-            restoreData(fileInput) {
-                const file = fileInput.files[0];
-                if (!file) return;
-
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    try {
-                        const backupData = JSON.parse(e.target.result);
-
-                        if (backupData.settings) this.settings = backupData.settings;
-                        if (backupData.user) this.currentUser = backupData.user;
-                        if (backupData.assets) this.assets = backupData.assets;
-                        if (backupData.inventory) this.inventoryData = backupData.inventory;
-
-                        // Save to localStorage
-                        localStorage.setItem('assetManagerSettings', JSON.stringify(this.settings));
-                        localStorage.setItem('assetManagerUser', JSON.stringify(this.currentUser));
-
-                        this.applySettings();
-                        this.updateDashboardStats();
-                        this.renderAssets();
-
-                        this.showAlert('Đã khôi phục dữ liệu thành công!', 'success');
-
-                    } catch (error) {
-                        console.error('Restore error:', error);
-                        this.showAlert('Lỗi khôi phục dữ liệu. File không hợp lệ.', 'error');
-                    }
-                };
-
-                reader.readAsText(file);
-                fileInput.value = '';
+        let assets = [];
+        let scanner = null;
+        let isScanning = false;
+        let currentUser = {
+            name: '',
+            department: '',
+            location: ''
+        };
+        let settings = {
+            apiUrl: '',
+            qrSize: 256
+        };
+
+        // ====================================
+        // PAGE NAVIGATION
+        // ====================================
+
+        function showPage(pageId) {
+            // Hide all pages
+            const pages = document.querySelectorAll('.page');
+            pages.forEach(page => page.classList.remove('active'));
+
+            // Hide all nav buttons active state
+            const navBtns = document.querySelectorAll('.nav-btn');
+            navBtns.forEach(btn => btn.classList.remove('active'));
+
+            // Show target page
+            document.getElementById(pageId).classList.add('active');
+            event.target.classList.add('active');
+
+            // Page-specific actions
+            switch (pageId) {
+                case 'dashboard':
+                    updateDashboard();
+                    break;
+                case 'assets':
+                    if (assets.length === 0) loadAssets();
+                    break;
+                case 'settings':
+                    loadSettings();
+                    break;
             }
         }
 
         // ====================================
-        // GLOBAL FUNCTIONS
+        // SETTINGS MANAGEMENT
         // ====================================
 
-        // Initialize app when DOM is ready
-        let assetManager;
+        function loadSettings() {
+            const savedSettings = localStorage.getItem('assetManagerSettings');
+            const savedUser = localStorage.getItem('assetManagerUser');
 
-        document.addEventListener('DOMContentLoaded', () => {
-            assetManager = new AssetManager();
-        });
+            if (savedSettings) {
+                settings = JSON.parse(savedSettings);
+                document.getElementById('apiUrl').value = settings.apiUrl || '';
+            }
 
-        // Global functions for onclick handlers
-        window.loadAssets = () => assetManager.loadAssets();
-        window.testConnection = () => assetManager.testConnection();
-        window.saveSettings = () => assetManager.saveSettings();
-        window.generateSingleQR = () => assetManager.generateSingleQR();
-        window.generateAllQR = () => assetManager.generateAllQR();
-        window.downloadQRPDF = () => assetManager.downloadQRPDF();
-        window.resetInventory = () => assetManager.resetInventory();
-        window.exportInventory = () => assetManager.exportInventory();
-        window.clearCache = () => assetManager.clearCache();
-        window.backupData = () => assetManager.backupData();
-        window.restoreData = (input) => assetManager.restoreData(input);
-        window.closeModal = (modalId) => assetManager.closeModal(modalId);
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                document.getElementById('userName').value = currentUser.name || '';
+                document.getElementById('userDepartment').value = currentUser.department || '';
+                document.getElementById('userLocation').value = currentUser.location || '';
+            }
+        }
+
+        function saveSettings() {
+            settings.apiUrl = document.getElementById('apiUrl').value;
+            currentUser.name = document.getElementById('userName').value;
+            currentUser.department = document.getElementById('userDepartment').value;
+            currentUser.location = document.getElementById('userLocation').value;
+
+            localStorage.setItem('assetManagerSettings', JSON.stringify(settings));
+            localStorage.setItem('assetManagerUser', JSON.stringify(currentUser));
+
+            showAlert('Đã lưu cài đặt thành công!', 'success');
+        }
+
+        async function testConnection() {
+            if (!settings.apiUrl) {
+                showAlert('Vui lòng nhập Google Apps Script URL', 'warning');
+                return;
+            }
+
+            const statusDiv = document.getElementById('connectionStatus');
+            statusDiv.className = 'alert alert-warning';
+            statusDiv.innerHTML = 'Đang kiểm tra kết nối...';
+            statusDiv.classList.remove('hidden');
+
+            try {
+                const response = await fetch(`${settings.apiUrl}?action=test`);
+                const result = await response.json();
+
+                if (result.success) {
+                    statusDiv.className = 'alert alert-success';
+                    statusDiv.innerHTML = '✅ Kết nối thành công! API hoạt động bình thường.';
+                } else {
+                    statusDiv.className = 'alert alert-error';
+                    statusDiv.innerHTML = '❌ Kết nối thất bại: ' + (result.error || 'Lỗi không xác định');
+                }
+            } catch (error) {
+                statusDiv.className = 'alert alert-error';
+                statusDiv.innerHTML = '❌ Lỗi kết nối: ' + error.message;
+            }
+        }
+
+        // ====================================
+        // ASSETS MANAGEMENT
+        // ====================================
+
+        async function loadAssets() {
+            if (!settings.apiUrl) {
+                showAlert('Vui lòng cấu hình Google Apps Script URL trong Cài đặt', 'warning');
+                return;
+            }
+
+            document.getElementById('assetsLoading').classList.remove('hidden');
+
+            try {
+                const response = await fetch(`${settings.apiUrl}?action=getAssets`);
+                const result = await response.json();
+
+                if (result.success) {
+                    assets = result.data || [];
+                    displayAssets();
+                    updateDashboard();
+                    showAlert(`Đã tải ${assets.length} tài sản thành công!`, 'success');
+                } else {
+                    showAlert('Lỗi tải dữ liệu: ' + (result.error || 'Lỗi không xác định'), 'error');
+                }
+            } catch (error) {
+                showAlert('Lỗi kết nối API: ' + error.message, 'error');
+            } finally {
+                document.getElementById('assetsLoading').classList.add('hidden');
+            }
+        }
+
+        function displayAssets(assetsToShow = null) {
+            const assetsList = document.getElementById('assetsList');
+            const displayAssets = assetsToShow || assets;
+
+            if (displayAssets.length === 0) {
+                assetsList.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: #6b7280;">
+                        <h3>📦 Chưa có dữ liệu tài sản</h3>
+                        <p>Vui lòng cấu hình Google Apps Script và tải dữ liệu</p>
+                        <button class="btn btn-primary" onclick="showPage('settings')">⚙️ Cài đặt ngay</button>
+                    </div>
+                `;
+                return;
+            }
+
+            assetsList.innerHTML = displayAssets.map(asset => `
+                <div class="asset-card">
+                    <div class="asset-code">${asset.code || 'N/A'}</div>
+                    <div class="asset-name">${asset.name_vi || asset.name_en || 'Không có tên'}</div>
+                    <div class="asset-details">
+                        <div><strong>Loại:</strong> ${asset.category || 'N/A'}</div>
+                        <div><strong>Model:</strong> ${asset.model || 'N/A'}</div>
+                        <div><strong>Vị trí:</strong> ${asset.location || 'N/A'}</div>
+                        <div><strong>Serial:</strong> ${asset.serial || 'N/A'}</div>
+                        <div><strong>Trạng thái:</strong> 
+                            <span style="color: ${asset.last_checked ? '#059669' : '#d97706'};">
+                                ${asset.last_checked ? '✅ Đã kiểm kê' : '⏳ Chưa kiểm kê'}
+                            </span>
+                        </div>
+                    </div>
+                    <div style="margin-top: 1rem;">
+                        <button class="btn btn-primary" onclick="generateQRForAsset('${asset.code}')">
+                            🎯 Tạo QR
+                        </button>
+                        ${asset.last_checked ? `
+                            <small style="display: block; margin-top: 0.5rem; color: #6b7280;">
+                                Kiểm kê: ${new Date(asset.last_checked).toLocaleString('vi-VN')}<br>
+                                Bởi: ${asset.checked_by || 'N/A'}
+                            </small>
+                        ` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function searchAssets() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+
+            if (!searchTerm) {
+                displayAssets();
+                return;
+            }
+
+            const filtered = assets.filter(asset => {
+                return Object.values(asset).some(value =>
+                    value && value.toString().toLowerCase().includes(searchTerm)
+                );
+            });
+
+            displayAssets(filtered);
+        }
+
+        function updateDashboard() {
+            const total = assets.length;
+            const checked = assets.filter(asset => asset.last_checked).length;
+            const unchecked = total - checked;
+            const progress = total > 0 ? Math.round((checked / total) * 100) : 0;
+
+            document.getElementById('totalAssets').textContent = total.toLocaleString();
+            document.getElementById('checkedAssets').textContent = checked.toLocaleString();
+            document.getElementById('uncheckedAssets').textContent = unchecked.toLocaleString();
+            document.getElementById('progressPercent').textContent = progress + '%';
+        }
+
+        // ====================================
+        // QR CODE SCANNER
+        // ====================================
+
+        async function startScanning() {
+            try {
+                if (!scanner) {
+                    scanner = new Html5Qrcode("reader");
+                }
+
+                const cameras = await Html5Qrcode.getCameras();
+                if (cameras.length === 0) {
+                    throw new Error('Không tìm thấy camera');
+                }
+
+                // Prefer back camera
+                const cameraId = cameras.find(camera =>
+                    camera.label.toLowerCase().includes('back') ||
+                    camera.label.toLowerCase().includes('environment')
+                ) ? .id || cameras[0].id;
+
+                await scanner.start(
+                    cameraId, {
+                        fps: 10,
+                        qrbox: {
+                            width: 250,
+                            height: 250
+                        }
+                    },
+                    (decodedText) => {
+                        onQRScanned(decodedText);
+                    }
+                );
+
+                isScanning = true;
+                document.getElementById('startScanBtn').classList.add('hidden');
+                document.getElementById('stopScanBtn').classList.remove('hidden');
+                document.getElementById('scannerAlert').classList.add('hidden');
+
+                showAlert('Đã bắt đầu quét QR code', 'success');
+
+            } catch (error) {
+                console.error('Scanner error:', error);
+                showAlert('Lỗi camera: ' + error.message, 'error');
+                document.getElementById('scannerAlert').classList.remove('hidden');
+            }
+        }
+
+        async function stopScanning() {
+            if (scanner && isScanning) {
+                try {
+                    await scanner.stop();
+                    isScanning = false;
+
+                    document.getElementById('startScanBtn').classList.remove('hidden');
+                    document.getElementById('stopScanBtn').classList.add('hidden');
+
+                    showAlert('Đã dừng quét QR code', 'warning');
+                } catch (error) {
+                    console.error('Stop scanner error:', error);
+                }
+            }
+        }
+
+        function onQRScanned(qrData) {
+            // Stop scanning temporarily
+            stopScanning();
+
+            // Find asset by QR data
+            const assetCode = qrData.split('|')[0] || qrData;
+            const asset = assets.find(a => a.code === assetCode);
+
+            const resultDiv = document.getElementById('scanResult');
+
+            if (asset) {
+                resultDiv.innerHTML = `
+                    <div class="qr-result success">
+                        <h3>✅ Quét thành công!</h3>
+                        <div class="asset-info">
+                            <div><strong>Mã tài sản:</strong> ${asset.code}</div>
+                            <div><strong>Tên:</strong> ${asset.name_vi || asset.name_en || 'N/A'}</div>
+                            <div><strong>Loại:</strong> ${asset.category || 'N/A'}</div>
+                            <div><strong>Model:</strong> ${asset.model || 'N/A'}</div>
+                            <div><strong>Vị trí:</strong> ${asset.location || 'N/A'}</div>
+                            <div><strong>Serial:</strong> ${asset.serial || 'N/A'}</div>
+                            <div><strong>Trạng thái:</strong> 
+                                <span style="color: ${asset.last_checked ? '#059669' : '#d97706'};">
+                                    ${asset.last_checked ? '✅ Đã kiểm kê' : '⏳ Chưa kiểm kê'}
+                                </span>
+                            </div>
+                        </div>
+                        <div style="margin-top: 1rem;">
+                            <button class="btn btn-success" onclick="confirmInventory('${asset.code}')">
+                                ✅ Xác nhận kiểm kê
+                            </button>
+                            <button class="btn btn-primary" onclick="startScanning()">
+                                🔄 Tiếp tục quét
+                            </button>
+                        </div>
+                    </div>
+                `;
+                resultDiv.classList.remove('hidden');
+            } else {
+                resultDiv.innerHTML = `
+                    <div class="qr-result">
+                        <h3>⚠️ Không tìm thấy tài sản</h3>
+                        <p>Mã QR: <strong>${qrData}</strong></p>
+                        <p>Không tìm thấy tài sản với mã này trong hệ thống.</p>
+                        <button class="btn btn-primary" onclick="startScanning()">
+                            🔄 Quét lại
+                        </button>
+                    </div>
+                `;
+                resultDiv.classList.remove('hidden');
+
+                // Auto restart scanning after 3 seconds
+                setTimeout(() => {
+                    startScanning();
+                }, 3000);
+            }
+        }
+
+        async function confirmInventory(assetCode) {
+            if (!currentUser.name) {
+                showAlert('Vui lòng cấu hình thông tin người dùng trong Cài đặt', 'warning');
+                showPage('settings');
+                return;
+            }
+
+            if (!settings.apiUrl) {
+                showAlert('Vui lòng cấu hình Google Apps Script URL trong Cài đặt', 'warning');
+                showPage('settings');
+                return;
+            }
+
+            try {
+                const inventoryData = {
+                    assetCode: assetCode,
+                    checkedBy: currentUser.name,
+                    department: currentUser.department,
+                    location: currentUser.location,
+                    timestamp: new Date().toISOString(),
+                    notes: 'Kiểm kê bằng QR Scanner'
+                };
+
+                const response = await fetch(settings.apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'updateInventory',
+                        data: inventoryData
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    // Update local asset data
+                    const asset = assets.find(a => a.code === assetCode);
+                    if (asset) {
+                        asset.last_checked = inventoryData.timestamp;
+                        asset.checked_by = inventoryData.checkedBy;
+                        asset.inventory_notes = inventoryData.notes;
+                    }
+
+                    showAlert('✅ Đã cập nhật kiểm kê thành công!', 'success');
+                    updateDashboard();
+
+                    // Auto continue scanning after 2 seconds
+                    setTimeout(() => {
+                        document.getElementById('scanResult').classList.add('hidden');
+                        startScanning();
+                    }, 2000);
+                } else {
+                    showAlert('❌ Lỗi cập nhật kiểm kê: ' + (result.error || 'Lỗi không xác định'), 'error');
+                }
+            } catch (error) {
+                showAlert('❌ Lỗi kết nối: ' + error.message, 'error');
+            }
+        }
+
+        // ====================================
+        // QR CODE GENERATOR
+        // ====================================
+
+        function generateSingleQR() {
+            const assetCode = document.getElementById('assetCodeInput').value.trim();
+            if (!assetCode) {
+                showAlert('Vui lòng nhập mã tài sản', 'warning');
+                return;
+            }
+
+            const asset = assets.find(a => a.code === assetCode);
+            if (!asset) {
+                showAlert('Không tìm thấy tài sản với mã: ' + assetCode, 'error');
+                return;
+            }
+
+            generateQRForAsset(assetCode);
+        }
+
+        function generateQRForAsset(assetCode) {
+            const asset = assets.find(a => a.code === assetCode);
+            if (!asset) {
+                showAlert('Không tìm thấy tài sản với mã: ' + assetCode, 'error');
+                return;
+            }
+
+            const resultDiv = document.getElementById('qrResult');
+            resultDiv.innerHTML = `
+                <h3>🎯 QR Code - ${assetCode}</h3>
+                <div id="qrcode-${assetCode}" style="margin: 1rem auto;"></div>
+                <p style="margin: 1rem 0; color: #6b7280;">${asset.name_vi || asset.name_en || 'Không có tên'}</p>
+                <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                    <button class="btn btn-primary" onclick="downloadQR('${assetCode}')">
+                        📥 Tải xuống
+                    </button>
+                    <button class="btn btn-success" onclick="printQR('${assetCode}')">
+                        🖨️ In QR
+                    </button>
+                </div>
+            `;
+
+            resultDiv.classList.remove('hidden');
+
+            // Generate QR code
+            const qrData = `${asset.code}|${asset.name_vi || asset.name_en || ''}|${asset.location || ''}`;
+
+            QRCode.toCanvas(
+                document.getElementById(`qrcode-${assetCode}`),
+                qrData, {
+                    width: settings.qrSize || 256,
+                    height: settings.qrSize || 256,
+                    colorDark: '#000000',
+                    colorLight: '#ffffff'
+                },
+                function (error) {
+                    if (error) {
+                        console.error('QR generation error:', error);
+                        showAlert('Lỗi tạo QR code: ' + error.message, 'error');
+                    }
+                }
+            );
+        }
+
+        async function generateAllQR() {
+            if (assets.length === 0) {
+                showAlert('Không có dữ liệu tài sản để tạo QR', 'warning');
+                return;
+            }
+
+            const progressDiv = document.getElementById('qrProgress');
+            const progressText = document.getElementById('progressText');
+
+            progressDiv.classList.remove('hidden');
+
+            let qrDataCollection = [];
+
+            for (let i = 0; i < assets.length; i++) {
+                const asset = assets[i];
+                progressText.textContent = `${i + 1}/${assets.length}`;
+
+                try {
+                    const qrData = `${asset.code}|${asset.name_vi || asset.name_en || ''}|${asset.location || ''}`;
+
+                    // Generate QR as data URL
+                    const qrCanvas = document.createElement('canvas');
+                    await new Promise((resolve, reject) => {
+                        QRCode.toCanvas(qrCanvas, qrData, {
+                            width: 200,
+                            height: 200,
+                            colorDark: '#000000',
+                            colorLight: '#ffffff'
+                        }, (error) => {
+                            if (error) reject(error);
+                            else resolve();
+                        });
+                    });
+
+                    qrDataCollection.push({
+                        asset: asset,
+                        qrDataUrl: qrCanvas.toDataURL()
+                    });
+
+                } catch (error) {
+                    console.error(`Error generating QR for ${asset.code}:`, error);
+                }
+
+                // Small delay to prevent blocking
+                if (i % 10 === 0) {
+                    await new Promise(resolve => setTimeout(resolve, 50));
+                }
+            }
+
+            progressDiv.classList.add('hidden');
+
+            // Create download link for all QR codes
+            createQRDownloadLink(qrDataCollection);
+
+            showAlert(`✅ Đã tạo thành công ${qrDataCollection.length} QR code!`, 'success');
+        }
+
+        function createQRDownloadLink(qrDataCollection) {
+            const resultDiv = document.getElementById('qrResult');
+
+            // Create a simple HTML page with all QR codes
+            let htmlContent = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>QR Codes - All Assets</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; margin: 20px; }
+                        .qr-container { display: inline-block; margin: 10px; padding: 10px; border: 1px solid #ccc; text-align: center; }
+                        .qr-container img { display: block; margin: 0 auto 10px; }
+                        .asset-info { font-size: 12px; max-width: 200px; }
+                        @media print { .qr-container { page-break-inside: avoid; } }
+                    </style>
+                </head>
+                <body>
+                    <h1>QR Codes - Asset Management</h1>
+                    <p>Tổng số: ${qrDataCollection.length} QR codes</p>
+            `;
+
+            qrDataCollection.forEach(item => {
+                htmlContent += `
+                    <div class="qr-container">
+                        <img src="${item.qrDataUrl}" alt="QR ${item.asset.code}">
+                        <div class="asset-info">
+                            <strong>${item.asset.code}</strong><br>
+                            ${item.asset.name_vi || item.asset.name_en || ''}<br>
+                            ${item.asset.location || ''}
+                        </div>
+                    </div>
+                `;
+            });
+
+            htmlContent += '</body></html>';
+
+            // Create download link
+            const blob = new Blob([htmlContent], {
+                type: 'text/html'
+            });
+            const url = URL.createObjectURL(blob);
+
+            resultDiv.innerHTML = `
+                <h3>✅ QR Codes đã tạo xong!</h3>
+                <p>Đã tạo ${qrDataCollection.length} QR codes</p>
+                <div style="margin: 1rem 0;">
+                    <a href="${url}" download="QR_Codes_All_Assets.html" class="btn btn-primary">
+                        📥 Tải file HTML
+                    </a>
+                    <button class="btn btn-success" onclick="window.open('${url}', '_blank')">
+                        👁️ Xem trước & In
+                    </button>
+                </div>
+            `;
+
+            resultDiv.classList.remove('hidden');
+        }
+
+        function downloadQR(assetCode) {
+            const canvas = document.querySelector(`#qrcode-${assetCode} canvas`);
+            if (!canvas) return;
+
+            const link = document.createElement('a');
+            link.download = `QR_${assetCode}.png`;
+            link.href = canvas.toDataURL();
+            link.click();
+
+            showAlert(`📥 Đã tải QR code cho ${assetCode}`, 'success');
+        }
+
+        function printQR(assetCode) {
+            const canvas = document.querySelector(`#qrcode-${assetCode} canvas`);
+            if (!canvas) return;
+
+            const asset = assets.find(a => a.code === assetCode);
+
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <html>
+                    <head>
+                        <title>Print QR Code - ${assetCode}</title>
+                        <style>
+                            body { font-family: Arial, sans-serif; text-align: center; margin: 20px; }
+                            .qr-container { border: 2px solid #000; padding: 20px; display: inline-block; }
+                            .asset-info { margin-top: 10px; font-size: 14px; }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="qr-container">
+                            <img src="${canvas.toDataURL()}" alt="QR Code ${assetCode}">
+                            <div class="asset-info">
+                                <strong>${assetCode}</strong><br>
+                                ${asset ? asset.name_vi || asset.name_en || '' : ''}<br>
+                                ${asset ? asset.location || '' : ''}
+                            </div>
+                        </div>
+                        <script>window.print(); window.close();
     </script>
+</body>
+
+</html>
+`);
+
+printWindow.document.close();
+}
+
+// ====================================
+// DATA MANAGEMENT
+// ====================================
+
+function exportData() {
+if (assets.length === 0) {
+showAlert('Không có dữ liệu để export', 'warning');
+return;
+}
+
+// Create CSV content
+const csvHeaders = [
+'Mã tài sản', 'Tên (Tiếng Việt)', 'Tên (English)', 'Loại', 'Model',
+'Serial', 'Vị trí', 'Giá trị', 'Trạng thái kiểm kê',
+'Người kiểm kê', 'Thời gian kiểm kê', 'Ghi chú'
+];
+
+const csvData = assets.map(asset => [
+asset.code || '',
+asset.name_vi || '',
+asset.name_en || '',
+asset.category || '',
+asset.model || '',
+asset.serial || '',
+asset.location || '',
+asset.value || '',
+asset.last_checked ? 'Đã kiểm kê' : 'Chưa kiểm kê',
+asset.checked_by || '',
+asset.last_checked ? new Date(asset.last_checked).toLocaleString('vi-VN') : '',
+asset.inventory_notes || ''
+]);
+
+const csvContent = [csvHeaders, ...csvData]
+.map(row => row.map(cell => `"${cell}"`).join(','))
+.join('\n');
+
+// Add BOM for UTF-8
+const BOM = '\uFEFF';
+const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+
+const link = document.createElement('a');
+link.href = URL.createObjectURL(blob);
+link.download = `Asset_Export_${new Date().toISOString().split('T')[0]}.csv`;
+link.click();
+
+showAlert('📤 Đã export dữ liệu thành công!', 'success');
+}
+
+async function resetInventory() {
+if (!confirm('Bạn có chắc chắn muốn reset toàn bộ dữ liệu kiểm kê? Hành động này không thể hoàn tác.')) {
+return;
+}
+
+if (!settings.apiUrl) {
+showAlert('Vui lòng cấu hình Google Apps Script URL trong Cài đặt', 'warning');
+return;
+}
+
+try {
+const response = await fetch(settings.apiUrl, {
+method: 'POST',
+headers: {
+'Content-Type': 'application/json',
+},
+body: JSON.stringify({
+action: 'resetInventory',
+resetBy: currentUser.name || 'System',
+timestamp: new Date().toISOString()
+})
+});
+
+const result = await response.json();
+
+if (result.success) {
+// Clear local inventory data
+assets.forEach(asset => {
+asset.last_checked = null;
+asset.checked_by = null;
+asset.inventory_notes = null;
+});
+
+updateDashboard();
+displayAssets();
+
+showAlert('🔄 Đã reset dữ liệu kiểm kê thành công!', 'success');
+} else {
+showAlert('❌ Lỗi reset kiểm kê: ' + (result.error || 'Lỗi không xác định'), 'error');
+}
+} catch (error) {
+showAlert('❌ Lỗi kết nối: ' + error.message, 'error');
+}
+}
+
+function clearAllData() {
+if (!confirm('Bạn có chắc chắn muốn xóa toàn bộ dữ liệu cục bộ? Hành động này không thể hoàn tác.')) {
+return;
+}
+
+localStorage.clear();
+sessionStorage.clear();
+
+// Reset variables
+assets = [];
+settings = { apiUrl: '', qrSize: 256 };
+currentUser = { name: '', department: '', location: '' };
+
+// Reset UI
+updateDashboard();
+displayAssets();
+loadSettings();
+
+showAlert('🗑️ Đã xóa toàn bộ dữ liệu cục bộ!', 'success');
+}
+
+// ====================================
+// UTILITY FUNCTIONS
+// ====================================
+
+function showAlert(message, type = 'success') {
+// Remove existing alerts
+const existingAlert = document.querySelector('.alert-floating');
+if (existingAlert) {
+existingAlert.remove();
+}
+
+const alert = document.createElement('div');
+alert.className = `alert alert-${type} alert-floating`;
+alert.style.cssText = `
+position: fixed;
+top: 20px;
+right: 20px;
+z-index: 10000;
+max-width: 350px;
+box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+border-radius: 0.5rem;
+`;
+
+alert.innerHTML = `
+<div style="display: flex; justify-content: space-between; align-items: flex-start;">
+    <span>${message}</span>
+    <button onclick="this.parentElement.parentElement.remove()"
+        style="background: none; border: none; font-size: 1.2rem; cursor: pointer; padding: 0; margin-left: 1rem; opacity: 0.7;">×</button>
+</div>
+`;
+
+document.body.appendChild(alert);
+
+// Auto remove after 5 seconds
+setTimeout(() => {
+if (alert.parentElement) {
+alert.remove();
+}
+}, 5000);
+}
+
+// ====================================
+// INITIALIZATION
+// ====================================
+
+document.addEventListener('DOMContentLoaded', function() {
+console.log('Asset Manager initialized');
+loadSettings();
+updateDashboard();
+
+// Load demo data if no API configured
+if (!settings.apiUrl) {
+showAlert('👋 Chào mừng! Vui lòng cấu hình Google Apps Script trong phần Cài đặt để bắt đầu.', 'warning');
+}
+
+// Register service worker for PWA
+if ('serviceWorker' in navigator) {
+navigator.serviceWorker.register('sw.js').then(function(registration) {
+console.log('Service Worker registered successfully:', registration.scope);
+}).catch(function(error) {
+console.log('Service Worker registration failed:', error);
+});
+}
+});
+
+// Prevent back button from breaking scanner
+window.addEventListener('beforeunload', function() {
+if (scanner && isScanning) {
+stopScanning();
+}
+});
+
+// Handle keyboard shortcuts
+document.addEventListener('keydown', function(e) {
+// Escape key to stop scanning
+if (e.key === 'Escape' && isScanning) {
+stopScanning();
+}
+
+// Ctrl/Cmd + S to save settings
+if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+e.preventDefault();
+if (document.getElementById('settings').classList.contains('active')) {
+saveSettings();
+}
+}
+});
+</script>
 </body>
 
 </html>
