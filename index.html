@@ -4,16 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Asset Manager - Hệ Thống Quản Lý Tài Sản</title>
-
-    <!-- PWA Meta -->
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#2563eb">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-
-    <!-- QR Libraries -->
+    <title>Asset Scanner Pro - Quét QR Liên Tục</title>
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 
     <style>
         * {
@@ -23,795 +17,820 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f8fafc;
-            color: #1e293b;
-            line-height: 1.6;
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif;
+            background: #000;
+            color: #fff;
+            overflow: hidden;
+            height: 100vh;
         }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 1rem;
-        }
-
-        /* Header */
+        /* Header với thông tin user và stats */
         .header {
-            background: white;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            margin-bottom: 2rem;
-            border-radius: 0.75rem;
-            padding: 1.5rem;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(180deg, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.7) 100%);
+            backdrop-filter: blur(20px);
+            padding: 1rem;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        .header h1 {
-            color: #2563eb;
-            font-size: 1.5rem;
-            margin-bottom: 0.5rem;
-        }
-
-        /* Navigation */
-        .nav {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-bottom: 2rem;
-        }
-
-        .nav-btn {
-            background: #2563eb;
-            color: white;
-            padding: 1rem 1.5rem;
-            border: none;
-            border-radius: 0.5rem;
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: 500;
-            transition: all 0.2s;
+        .user-info {
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            justify-content: center;
-            text-decoration: none;
-            min-height: 60px;
+            font-size: 0.9rem;
         }
 
-        .nav-btn:hover {
-            background: #1d4ed8;
-            transform: translateY(-2px);
-        }
-
-        .nav-btn.active {
-            background: #059669;
-        }
-
-        /* Page Content */
-        .page {
-            display: none;
-            background: white;
-            border-radius: 0.75rem;
-            padding: 2rem;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            margin-bottom: 2rem;
-        }
-
-        .page.active {
-            display: block;
-        }
-
-        .page h2 {
-            color: #2563eb;
-            margin-bottom: 1.5rem;
-            font-size: 1.5rem;
-        }
-
-        /* Stats Cards */
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        .stats-mini {
+            display: flex;
             gap: 1rem;
-            margin-bottom: 2rem;
+            font-size: 0.8rem;
         }
 
-        .stat-card {
-            background: linear-gradient(135deg, #2563eb, #1d4ed8);
-            color: white;
-            padding: 1.5rem;
-            border-radius: 0.75rem;
+        .stat-item {
             text-align: center;
         }
 
         .stat-number {
-            font-size: 2rem;
             font-weight: bold;
-            margin-bottom: 0.5rem;
+            font-size: 1.2rem;
         }
 
         .stat-label {
-            opacity: 0.9;
-            font-size: 0.875rem;
+            opacity: 0.7;
+            font-size: 0.7rem;
         }
 
-        /* Forms */
-        .form-group {
+        /* Camera Scanner */
+        .scanner-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+        }
+
+        #reader {
+            width: 100% !important;
+            height: 100% !important;
+            border: none !important;
+        }
+
+        #reader video {
+            object-fit: cover !important;
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        /* Scanning Overlay */
+        .scan-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 50;
+        }
+
+        .scan-frame {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 250px;
+            height: 250px;
+            border: 2px solid #00ff88;
+            border-radius: 20px;
+            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+        }
+
+        .scan-frame::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, #00ff88, transparent);
+            animation: scanLine 2s linear infinite;
+        }
+
+        @keyframes scanLine {
+            0% {
+                top: -2px;
+            }
+
+            100% {
+                top: 250px;
+            }
+        }
+
+        .scan-corners {
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+        }
+
+        .corner {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border: 3px solid #00ff88;
+        }
+
+        .corner.top-left {
+            top: 0;
+            left: 0;
+            border-bottom: none;
+            border-right: none;
+            border-radius: 20px 0 0 0;
+        }
+
+        .corner.top-right {
+            top: 0;
+            right: 0;
+            border-bottom: none;
+            border-left: none;
+            border-radius: 0 20px 0 0;
+        }
+
+        .corner.bottom-left {
+            bottom: 0;
+            left: 0;
+            border-top: none;
+            border-right: none;
+            border-radius: 0 0 0 20px;
+        }
+
+        .corner.bottom-right {
+            bottom: 0;
+            right: 0;
+            border-top: none;
+            border-left: none;
+            border-radius: 0 0 20px 0;
+        }
+
+        /* Scan Instruction */
+        .scan-instruction {
+            position: fixed;
+            bottom: 200px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            z-index: 60;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 1rem 2rem;
+            border-radius: 30px;
+            backdrop-filter: blur(20px);
+        }
+
+        /* Bottom Controls */
+        .bottom-controls {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(0deg, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.7) 100%);
+            backdrop-filter: blur(20px);
+            padding: 1.5rem;
+            z-index: 100;
+        }
+
+        .control-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .control-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+        }
+
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        .control-btn.primary {
+            background: #007AFF;
+        }
+
+        .control-btn.danger {
+            background: #FF3B30;
+        }
+
+        .control-btn.success {
+            background: #34C759;
+        }
+
+        /* Quick Result Modal */
+        .quick-result {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #fff;
+            color: #000;
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 200;
+            border-radius: 20px 20px 0 0;
+            box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .quick-result.show {
+            transform: translateY(0);
+        }
+
+        .result-header {
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8f9fa;
+            border-radius: 20px 20px 0 0;
+        }
+
+        .result-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .close-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: none;
+            background: #e9ecef;
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: #666;
+        }
+
+        .result-body {
+            padding: 1.5rem;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        .asset-preview {
+            display: flex;
+            gap: 1rem;
             margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+
+        .asset-code {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #007AFF;
+            margin-bottom: 0.5rem;
+        }
+
+        .asset-name {
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-badge.checked {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-badge.unchecked {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .quick-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .info-item {
+            font-size: 0.9rem;
+        }
+
+        .info-label {
+            color: #666;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            margin-bottom: 0.25rem;
+        }
+
+        .info-value {
+            font-weight: 500;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 1rem;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1rem;
+        }
+
+        .action-btn.primary {
+            background: #007AFF;
+            color: white;
+        }
+
+        .action-btn.secondary {
+            background: #f8f9fa;
+            color: #333;
+            border: 1px solid #dee2e6;
+        }
+
+        .action-btn.success {
+            background: #34C759;
+            color: white;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Edit Form */
+        .edit-form {
+            display: none;
+            padding-top: 1rem;
+            border-top: 1px solid #eee;
+            margin-top: 1rem;
+        }
+
+        .edit-form.show {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
         }
 
         .form-label {
             display: block;
             margin-bottom: 0.5rem;
             font-weight: 500;
-            color: #374151;
+            font-size: 0.9rem;
+            color: #333;
         }
 
         .form-input {
             width: 100%;
             padding: 0.75rem;
-            border: 1px solid #d1d5db;
-            border-radius: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
             font-size: 1rem;
-            transition: border-color 0.2s;
         }
 
         .form-input:focus {
             outline: none;
-            border-color: #2563eb;
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            border-color: #007AFF;
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
         }
 
-        .btn {
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 0.5rem;
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: 500;
-            transition: all 0.2s;
-            text-decoration: none;
-            display: inline-block;
-            text-align: center;
-        }
-
-        .btn-primary {
-            background: #2563eb;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #1d4ed8;
-        }
-
-        .btn-success {
-            background: #059669;
-            color: white;
-        }
-
-        .btn-success:hover {
-            background: #047857;
-        }
-
-        .btn-warning {
-            background: #d97706;
-            color: white;
-        }
-
-        .btn-warning:hover {
-            background: #b45309;
-        }
-
-        .btn-full {
+        /* Success Animation */
+        .success-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
-            margin-bottom: 1rem;
-        }
-
-        /* QR Scanner */
-        .scanner-container {
-            background: #000;
-            border-radius: 0.75rem;
-            overflow: hidden;
-            margin-bottom: 1rem;
-            min-height: 300px;
-            display: flex;
+            height: 100%;
+            background: rgba(52, 199, 89, 0.9);
+            display: none;
             align-items: center;
             justify-content: center;
+            z-index: 300;
         }
 
-        #reader {
-            width: 100%;
-        }
-
-        /* QR Result */
-        .qr-result {
-            background: #f0f9ff;
-            border: 2px solid #0ea5e9;
-            border-radius: 0.75rem;
-            padding: 2rem;
-            margin: 1rem 0;
+        .success-content {
             text-align: center;
+            color: white;
         }
 
-        .qr-result.success {
-            background: #f0fdf4;
-            border-color: #22c55e;
-        }
-
-        .qr-result h3 {
-            color: #059669;
+        .success-icon {
+            font-size: 4rem;
             margin-bottom: 1rem;
+            animation: successPulse 0.6s ease-out;
         }
 
-        .asset-info {
-            display: grid;
-            gap: 0.5rem;
-            margin: 1rem 0;
-            text-align: left;
-        }
-
-        .asset-info div {
-            padding: 0.5rem;
-            background: rgba(255, 255, 255, 0.5);
-            border-radius: 0.25rem;
-        }
-
-        /* Assets Grid */
-        .assets-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 1rem;
-        }
-
-        .asset-card {
-            background: white;
-            border: 1px solid #e5e7eb;
-            border-radius: 0.75rem;
-            padding: 1.5rem;
-            transition: all 0.2s;
-        }
-
-        .asset-card:hover {
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transform: translateY(-2px);
-        }
-
-        .asset-code {
-            font-size: 1.25rem;
-            font-weight: bold;
-            color: #2563eb;
-            margin-bottom: 0.5rem;
-        }
-
-        .asset-name {
-            color: #6b7280;
-            margin-bottom: 1rem;
-        }
-
-        .asset-details {
-            display: grid;
-            gap: 0.5rem;
-            font-size: 0.875rem;
-        }
-
-        /* QR Code Display */
-        .qr-display {
-            text-align: center;
-            padding: 2rem;
-            background: #f9fafb;
-            border-radius: 0.75rem;
-            margin: 1rem 0;
-        }
-
-        /* Alerts */
-        .alert {
-            padding: 1rem;
-            border-radius: 0.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .alert-success {
-            background: #f0fdf4;
-            color: #166534;
-            border: 1px solid #bbf7d0;
-        }
-
-        .alert-error {
-            background: #fef2f2;
-            color: #991b1b;
-            border: 1px solid #fecaca;
-        }
-
-        .alert-warning {
-            background: #fffbeb;
-            color: #92400e;
-            border: 1px solid #fed7aa;
-        }
-
-        /* Loading */
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #2563eb;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
+        @keyframes successPulse {
             0% {
-                transform: rotate(0deg);
+                transform: scale(0);
+                opacity: 0;
+            }
+
+            50% {
+                transform: scale(1.2);
+                opacity: 1;
             }
 
             100% {
-                transform: rotate(360deg);
+                transform: scale(1);
+                opacity: 1;
             }
         }
 
-        .text-center {
+        /* Manual Input */
+        .manual-input {
+            position: fixed;
+            top: 80px;
+            left: 1rem;
+            right: 1rem;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(20px);
+            padding: 1rem;
+            border-radius: 15px;
+            z-index: 150;
+            transform: translateY(-100px);
+            opacity: 0;
+            transition: all 0.3s;
+        }
+
+        .manual-input.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .manual-input input {
+            width: 100%;
+            padding: 1rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
             text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
         }
 
-        .hidden {
-            display: none !important;
+        .manual-input input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
         }
 
-        /* Mobile Responsive */
-        @media (max-width: 768px) {
-            .container {
-                padding: 0.5rem;
+        /* Navigation Tabs */
+        .nav-tabs {
+            position: fixed;
+            top: 70px;
+            left: 0;
+            right: 0;
+            display: flex;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(20px);
+            z-index: 90;
+        }
+
+        .nav-tab {
+            flex: 1;
+            padding: 1rem;
+            text-align: center;
+            border: none;
+            background: none;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .nav-tab.active {
+            color: #00ff88;
+            background: rgba(0, 255, 136, 0.1);
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .header {
+                padding: 0.75rem;
             }
 
-            .nav {
-                grid-template-columns: 1fr;
+            .stats-mini {
+                gap: 0.5rem;
             }
 
-            .stats {
-                grid-template-columns: repeat(2, 1fr);
+            .scan-frame {
+                width: 200px;
+                height: 200px;
             }
 
-            .assets-grid {
-                grid-template-columns: 1fr;
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+
+        /* Sound Wave Animation */
+        .sound-wave {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: none;
+            z-index: 250;
+        }
+
+        .wave {
+            width: 4px;
+            height: 20px;
+            background: #00ff88;
+            margin: 0 2px;
+            display: inline-block;
+            animation: wave 1s infinite;
+        }
+
+        .wave:nth-child(2) {
+            animation-delay: 0.1s;
+        }
+
+        .wave:nth-child(3) {
+            animation-delay: 0.2s;
+        }
+
+        .wave:nth-child(4) {
+            animation-delay: 0.3s;
+        }
+
+        .wave:nth-child(5) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes wave {
+
+            0%,
+            40%,
+            100% {
+                transform: scaleY(0.4);
             }
 
-            .form-input,
-            .btn {
-                min-height: 48px;
+            20% {
+                transform: scaleY(1);
             }
         }
     </style>
 </head>
 
 <body>
-    <div class="container">
-        <!-- Header -->
-        <div class="header">
-            <h1>🏢 Asset Manager</h1>
-            <p>Hệ thống quản lý và kiểm kê tài sản với QR Code</p>
+    <!-- Header -->
+    <div class="header">
+        <div class="user-info">
+            <i class="fas fa-user-circle"></i>
+            <span id="currentUser">Admin</span>
         </div>
-
-        <!-- Navigation -->
-        <div class="nav">
-            <button class="nav-btn active" onclick="showPage('dashboard')">
-                📊 Dashboard
-            </button>
-            <button class="nav-btn" onclick="showPage('scanner')">
-                📱 Quét QR
-            </button>
-            <button class="nav-btn" onclick="showPage('assets')">
-                📋 Danh sách tài sản
-            </button>
-            <button class="nav-btn" onclick="showPage('qr-generator')">
-                🎯 Tạo QR Code
-            </button>
-            <button class="nav-btn" onclick="showPage('settings')">
-                ⚙️ Cài đặt
-            </button>
-        </div>
-
-        <!-- Dashboard Page -->
-        <div id="dashboard" class="page active">
-            <h2>📊 Dashboard Tổng Quan</h2>
-
-            <div class="stats">
-                <div class="stat-card">
-                    <div class="stat-number" id="totalAssets">0</div>
-                    <div class="stat-label">Tổng số tài sản</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="checkedAssets">0</div>
-                    <div class="stat-label">Đã kiểm kê</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="uncheckedAssets">0</div>
-                    <div class="stat-label">Chưa kiểm kê</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="progressPercent">0%</div>
-                    <div class="stat-label">Tiến độ hoàn thành</div>
-                </div>
+        <div class="stats-mini">
+            <div class="stat-item">
+                <div class="stat-number" id="totalCount">0</div>
+                <div class="stat-label">Tổng</div>
             </div>
-
-            <div class="form-group">
-                <button class="btn btn-primary btn-full" onclick="showPage('scanner')">
-                    📱 Bắt đầu quét QR Code
-                </button>
-                <button class="btn btn-success btn-full" onclick="showPage('assets')">
-                    📋 Xem danh sách tài sản
-                </button>
-                <button class="btn btn-warning btn-full" onclick="showPage('qr-generator')">
-                    🎯 Tạo QR Code hàng loạt
-                </button>
+            <div class="stat-item">
+                <div class="stat-number" id="checkedCount">0</div>
+                <div class="stat-label">Đã KK</div>
             </div>
-        </div>
-
-        <!-- Scanner Page -->
-        <div id="scanner" class="page">
-            <h2>📱 Quét QR Code Tài Sản</h2>
-
-            <div id="scannerAlert" class="alert alert-warning hidden">
-                <strong>Lưu ý:</strong> Vui lòng cho phép truy cập camera để quét QR code.
-            </div>
-
-            <div class="scanner-container" id="scannerContainer">
-                <div id="reader"></div>
-            </div>
-
-            <div class="text-center">
-                <button id="startScanBtn" class="btn btn-primary" onclick="startScanning()">
-                    🎥 Bắt đầu quét
-                </button>
-                <button id="stopScanBtn" class="btn btn-warning hidden" onclick="stopScanning()">
-                    🛑 Dừng quét
-                </button>
-            </div>
-
-            <div id="scanResult" class="hidden">
-                <!-- Kết quả quét sẽ hiển thị ở đây -->
-            </div>
-        </div>
-
-        <!-- Assets Page -->
-        <div id="assets" class="page">
-            <h2>📋 Danh Sách Tài Sản</h2>
-
-            <div class="form-group">
-                <input type="text" id="searchInput" class="form-input" placeholder="🔍 Tìm kiếm tài sản..."
-                    onkeyup="searchAssets()">
-            </div>
-
-            <div class="form-group">
-                <button class="btn btn-primary" onclick="loadAssets()">
-                    🔄 Tải lại danh sách
-                </button>
-                <button class="btn btn-success" onclick="exportData()">
-                    📤 Export Excel
-                </button>
-            </div>
-
-            <div id="assetsLoading" class="text-center hidden">
-                <div class="loading"></div>
-                <p>Đang tải dữ liệu tài sản...</p>
-            </div>
-
-            <div id="assetsList" class="assets-grid">
-                <!-- Danh sách tài sản sẽ hiển thị ở đây -->
-            </div>
-        </div>
-
-        <!-- QR Generator Page -->
-        <div id="qr-generator" class="page">
-            <h2>🎯 Tạo QR Code</h2>
-
-            <div class="form-group">
-                <label class="form-label">Nhập mã tài sản:</label>
-                <input type="text" id="assetCodeInput" class="form-input" placeholder="Ví dụ: HT001, TS002...">
-            </div>
-
-            <div class="form-group">
-                <button class="btn btn-primary btn-full" onclick="generateSingleQR()">
-                    🎯 Tạo QR Code đơn lẻ
-                </button>
-                <button class="btn btn-success btn-full" onclick="generateAllQR()">
-                    📦 Tạo QR Code hàng loạt
-                </button>
-            </div>
-
-            <div id="qrProgress" class="hidden">
-                <div class="alert alert-warning">
-                    <div class="loading"></div>
-                    Đang tạo QR code... <span id="progressText">0/0</span>
-                </div>
-            </div>
-
-            <div id="qrResult" class="qr-display hidden">
-                <!-- QR code sẽ hiển thị ở đây -->
-            </div>
-        </div>
-
-        <!-- Settings Page -->
-        <div id="settings" class="page">
-            <h2>⚙️ Cài Đặt Hệ Thống</h2>
-
-            <div class="form-group">
-                <label class="form-label">📡 Google Apps Script URL:</label>
-                <input type="url" id="apiUrl" class="form-input"
-                    placeholder="https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec">
-                <small style="color: #6b7280; margin-top: 0.5rem; display: block;">
-                    Nhập URL API từ Google Apps Script để kết nối với Google Sheets
-                </small>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">👤 Tên người kiểm kê:</label>
-                <input type="text" id="userName" class="form-input" placeholder="Nhập tên của bạn">
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">🏢 Bộ phận:</label>
-                <input type="text" id="userDepartment" class="form-input" placeholder="Ví dụ: Kế toán, IT...">
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">📍 Vị trí làm việc:</label>
-                <select id="userLocation" class="form-input">
-                    <option value="">Chọn vị trí</option>
-                    <option value="Produce">Produce</option>
-                    <option value="SMT">SMT</option>
-                    <option value="QTS">QTS</option>
-                    <option value="QC">QC</option>
-                    <option value="Warehouse">Warehouse</option>
-                    <option value="100% Office">100% Office</option>
-                    <option value="Canteen">Canteen</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <button class="btn btn-primary" onclick="testConnection()">
-                    🔌 Test kết nối
-                </button>
-                <button class="btn btn-success" onclick="saveSettings()">
-                    💾 Lưu cài đặt
-                </button>
-            </div>
-
-            <div id="connectionStatus" class="hidden">
-                <!-- Trạng thái kết nối sẽ hiển thị ở đây -->
-            </div>
-
-            <div class="form-group" style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #e5e7eb;">
-                <button class="btn btn-warning btn-full" onclick="clearAllData()">
-                    🗑️ Xóa tất cả dữ liệu
-                </button>
-                <button class="btn btn-success btn-full" onclick="resetInventory()">
-                    🔄 Reset kỳ kiểm kê mới
-                </button>
+            <div class="stat-item">
+                <div class="stat-number" id="progressPercent">0%</div>
+                <div class="stat-label">Tiến độ</div>
             </div>
         </div>
     </div>
 
-    <script>
-        // ====================================
-        // GLOBAL VARIABLES
-        // ====================================
+    <!-- Navigation Tabs -->
+    <div class="nav-tabs">
+        <button class="nav-tab active" data-mode="scan">
+            <i class="fas fa-qrcode"></i> Quét QR
+        </button>
+        <button class="nav-tab" data-mode="list">
+            <i class="fas fa-list"></i> Danh sách
+        </button>
+        <button class="nav-tab" data-mode="stats">
+            <i class="fas fa-chart-bar"></i> Thống kê
+        </button>
+    </div>
 
-        let assets = [];
+    <!-- Manual Input -->
+    <div class="manual-input" id="manualInput">
+        <input type="text" id="manualCode" placeholder="Nhập mã tài sản thủ công..." autocomplete="off">
+    </div>
+
+    <!-- Scanner Container -->
+    <div class="scanner-container">
+        <div id="reader"></div>
+
+        <!-- Scan Overlay -->
+        <div class="scan-overlay">
+            <div class="scan-frame">
+                <div class="scan-corners">
+                    <div class="corner top-left"></div>
+                    <div class="corner top-right"></div>
+                    <div class="corner bottom-left"></div>
+                    <div class="corner bottom-right"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scan Instruction -->
+        <div class="scan-instruction">
+            <div style="font-weight: 600; margin-bottom: 0.5rem;">Đưa mã QR vào khung quét</div>
+            <div style="opacity: 0.8; font-size: 0.9rem;">Camera sẽ tự động nhận diện</div>
+        </div>
+    </div>
+
+    <!-- Bottom Controls -->
+    <div class="bottom-controls">
+        <div class="control-buttons">
+            <button class="control-btn" id="flashBtn" title="Bật/tắt đèn flash">
+                <i class="fas fa-lightbulb"></i>
+            </button>
+            <button class="control-btn" id="manualBtn" title="Nhập thủ công">
+                <i class="fas fa-keyboard"></i>
+            </button>
+            <button class="control-btn primary" id="pauseBtn" title="Tạm dừng">
+                <i class="fas fa-pause"></i>
+            </button>
+            <button class="control-btn" id="settingsBtn" title="Cài đặt">
+                <i class="fas fa-cog"></i>
+            </button>
+            <button class="control-btn success" id="continueBtn" title="Tiếp tục quét" style="display: none;">
+                <i class="fas fa-play"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Quick Result Modal -->
+    <div class="quick-result" id="quickResult">
+        <div class="result-header">
+            <div class="result-title">Thông tin tài sản</div>
+            <button class="close-btn" id="closeResult">&times;</button>
+        </div>
+        <div class="result-body">
+            <div class="asset-preview">
+                <div>
+                    <div class="asset-code" id="resultCode">TS001</div>
+                    <div class="asset-name" id="resultName">Tên tài sản</div>
+                    <span class="status-badge unchecked" id="resultStatus">
+                        <i class="fas fa-clock"></i> Chưa kiểm kê
+                    </span>
+                </div>
+            </div>
+
+            <div class="quick-info" id="quickInfo">
+                <!-- Dynamic content -->
+            </div>
+
+            <div class="action-buttons">
+                <button class="action-btn success" id="quickCheckBtn">
+                    <i class="fas fa-check"></i> Xác nhận KK
+                </button>
+                <button class="action-btn secondary" id="editBtn">
+                    <i class="fas fa-edit"></i> Chỉnh sửa
+                </button>
+                <button class="action-btn primary" id="continueQRBtn">
+                    <i class="fas fa-qrcode"></i> Tiếp tục quét
+                </button>
+            </div>
+
+            <!-- Edit Form -->
+            <div class="edit-form" id="editForm">
+                <div class="form-group">
+                    <label class="form-label">Tình trạng tài sản:</label>
+                    <select class="form-input" id="assetCondition">
+                        <option value="Tốt">Tốt</option>
+                        <option value="Khá">Khá</option>
+                        <option value="Kém">Kém</option>
+                        <option value="Hỏng">Hỏng</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Vị trí hiện tại:</label>
+                    <input type="text" class="form-input" id="assetLocation" placeholder="Nhập vị trí mới...">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Ghi chú:</label>
+                    <textarea class="form-input" id="assetNotes" rows="3" placeholder="Nhập ghi chú..."></textarea>
+                </div>
+                <div class="action-buttons">
+                    <button class="action-btn secondary" id="cancelEditBtn">Hủy</button>
+                    <button class="action-btn success" id="saveEditBtn">
+                        <i class="fas fa-save"></i> Lưu & Tiếp tục
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Overlay -->
+    <div class="success-overlay" id="successOverlay">
+        <div class="success-content">
+            <div class="success-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div style="font-size: 1.5rem; font-weight: 600;">Đã kiểm kê!</div>
+            <div style="opacity: 0.8; margin-top: 0.5rem;">Tự động tiếp tục quét sau 1 giây</div>
+        </div>
+    </div>
+
+    <!-- Sound Wave -->
+    <div class="sound-wave" id="soundWave">
+        <span class="wave"></span>
+        <span class="wave"></span>
+        <span class="wave"></span>
+        <span class="wave"></span>
+        <span class="wave"></span>
+    </div>
+
+    <script>
+        // Configuration
+        const API_URL =
+            "https://script.google.com/macros/s/AKfycbw6n97lmKxwgigftyQoaWqY1yLGHBxUPYvZIcwYORoTRCMQeWId9mk_2xWtMhrnOL-vrg/exec";
+
+        // State
         let scanner = null;
         let isScanning = false;
-        let currentUser = {
-            name: '',
-            department: '',
-            location: ''
+        let currentAsset = null;
+        let assets = [];
+        let headers = [];
+        let scanSound = null;
+
+        // DOM Elements
+        const elements = {
+            reader: document.getElementById('reader'),
+            quickResult: document.getElementById('quickResult'),
+            resultCode: document.getElementById('resultCode'),
+            resultName: document.getElementById('resultName'),
+            resultStatus: document.getElementById('resultStatus'),
+            quickInfo: document.getElementById('quickInfo'),
+            editForm: document.getElementById('editForm'),
+            manualInput: document.getElementById('manualInput'),
+            manualCode: document.getElementById('manualCode'),
+            successOverlay: document.getElementById('successOverlay'),
+            soundWave: document.getElementById('soundWave'),
+
+            // Stats
+            totalCount: document.getElementById('totalCount'),
+            checkedCount: document.getElementById('checkedCount'),
+            progressPercent: document.getElementById('progressPercent'),
+
+            // Buttons
+            quickCheckBtn: document.getElementById('quickCheckBtn'),
+            editBtn: document.getElementById('editBtn'),
+            continueQRBtn: document.getElementById('continueQRBtn'),
+            closeResult: document.getElementById('closeResult'),
+            manualBtn: document.getElementById('manualBtn'),
+            flashBtn: document.getElementById('flashBtn'),
+            pauseBtn: document.getElementById('pauseBtn'),
+            continueBtn: document.getElementById('continueBtn'),
+
+            // Edit form
+            assetCondition: document.getElementById('assetCondition'),
+            assetLocation: document.getElementById('assetLocation'),
+            assetNotes: document.getElementById('assetNotes'),
+            saveEditBtn: document.getElementById('saveEditBtn'),
+            cancelEditBtn: document.getElementById('cancelEditBtn')
         };
-        let settings = {
-            apiUrl: '',
-            qrSize: 256
-        };
 
-        // ====================================
-        // PAGE NAVIGATION
-        // ====================================
-
-        function showPage(pageId) {
-            // Hide all pages
-            const pages = document.querySelectorAll('.page');
-            pages.forEach(page => page.classList.remove('active'));
-
-            // Hide all nav buttons active state
-            const navBtns = document.querySelectorAll('.nav-btn');
-            navBtns.forEach(btn => btn.classList.remove('active'));
-
-            // Show target page
-            document.getElementById(pageId).classList.add('active');
-            event.target.classList.add('active');
-
-            // Page-specific actions
-            switch (pageId) {
-                case 'dashboard':
-                    updateDashboard();
-                    break;
-                case 'assets':
-                    if (assets.length === 0) loadAssets();
-                    break;
-                case 'settings':
-                    loadSettings();
-                    break;
-            }
-        }
-
-        // ====================================
-        // SETTINGS MANAGEMENT
-        // ====================================
-
-        function loadSettings() {
-            const savedSettings = localStorage.getItem('assetManagerSettings');
-            const savedUser = localStorage.getItem('assetManagerUser');
-
-            if (savedSettings) {
-                settings = JSON.parse(savedSettings);
-                document.getElementById('apiUrl').value = settings.apiUrl || '';
-            }
-
-            if (savedUser) {
-                currentUser = JSON.parse(savedUser);
-                document.getElementById('userName').value = currentUser.name || '';
-                document.getElementById('userDepartment').value = currentUser.department || '';
-                document.getElementById('userLocation').value = currentUser.location || '';
-            }
-        }
-
-        function saveSettings() {
-            settings.apiUrl = document.getElementById('apiUrl').value;
-            currentUser.name = document.getElementById('userName').value;
-            currentUser.department = document.getElementById('userDepartment').value;
-            currentUser.location = document.getElementById('userLocation').value;
-
-            localStorage.setItem('assetManagerSettings', JSON.stringify(settings));
-            localStorage.setItem('assetManagerUser', JSON.stringify(currentUser));
-
-            showAlert('Đã lưu cài đặt thành công!', 'success');
-        }
-
-        async function testConnection() {
-            if (!settings.apiUrl) {
-                showAlert('Vui lòng nhập Google Apps Script URL', 'warning');
-                return;
-            }
-
-            const statusDiv = document.getElementById('connectionStatus');
-            statusDiv.className = 'alert alert-warning';
-            statusDiv.innerHTML = 'Đang kiểm tra kết nối...';
-            statusDiv.classList.remove('hidden');
-
+        // Initialize Scanner
+        async function initScanner() {
             try {
-                const response = await fetch(`${settings.apiUrl}?action=test`);
-                const result = await response.json();
-
-                if (result.success) {
-                    statusDiv.className = 'alert alert-success';
-                    statusDiv.innerHTML = '✅ Kết nối thành công! API hoạt động bình thường.';
-                } else {
-                    statusDiv.className = 'alert alert-error';
-                    statusDiv.innerHTML = '❌ Kết nối thất bại: ' + (result.error || 'Lỗi không xác định');
-                }
-            } catch (error) {
-                statusDiv.className = 'alert alert-error';
-                statusDiv.innerHTML = '❌ Lỗi kết nối: ' + error.message;
-            }
-        }
-
-        // ====================================
-        // ASSETS MANAGEMENT
-        // ====================================
-
-        async function loadAssets() {
-            if (!settings.apiUrl) {
-                showAlert('Vui lòng cấu hình Google Apps Script URL trong Cài đặt', 'warning');
-                return;
-            }
-
-            document.getElementById('assetsLoading').classList.remove('hidden');
-
-            try {
-                const response = await fetch(`${settings.apiUrl}?action=getAssets`);
-                const result = await response.json();
-
-                if (result.success) {
-                    assets = result.data || [];
-                    displayAssets();
-                    updateDashboard();
-                    showAlert(`Đã tải ${assets.length} tài sản thành công!`, 'success');
-                } else {
-                    showAlert('Lỗi tải dữ liệu: ' + (result.error || 'Lỗi không xác định'), 'error');
-                }
-            } catch (error) {
-                showAlert('Lỗi kết nối API: ' + error.message, 'error');
-            } finally {
-                document.getElementById('assetsLoading').classList.add('hidden');
-            }
-        }
-
-        function displayAssets(assetsToShow = null) {
-            const assetsList = document.getElementById('assetsList');
-            const displayAssets = assetsToShow || assets;
-
-            if (displayAssets.length === 0) {
-                assetsList.innerHTML = `
-                    <div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: #6b7280;">
-                        <h3>📦 Chưa có dữ liệu tài sản</h3>
-                        <p>Vui lòng cấu hình Google Apps Script và tải dữ liệu</p>
-                        <button class="btn btn-primary" onclick="showPage('settings')">⚙️ Cài đặt ngay</button>
-                    </div>
-                `;
-                return;
-            }
-
-            assetsList.innerHTML = displayAssets.map(asset => `
-                <div class="asset-card">
-                    <div class="asset-code">${asset.code || 'N/A'}</div>
-                    <div class="asset-name">${asset.name_vi || asset.name_en || 'Không có tên'}</div>
-                    <div class="asset-details">
-                        <div><strong>Loại:</strong> ${asset.category || 'N/A'}</div>
-                        <div><strong>Model:</strong> ${asset.model || 'N/A'}</div>
-                        <div><strong>Vị trí:</strong> ${asset.location || 'N/A'}</div>
-                        <div><strong>Serial:</strong> ${asset.serial || 'N/A'}</div>
-                        <div><strong>Trạng thái:</strong> 
-                            <span style="color: ${asset.last_checked ? '#059669' : '#d97706'};">
-                                ${asset.last_checked ? '✅ Đã kiểm kê' : '⏳ Chưa kiểm kê'}
-                            </span>
-                        </div>
-                    </div>
-                    <div style="margin-top: 1rem;">
-                        <button class="btn btn-primary" onclick="generateQRForAsset('${asset.code}')">
-                            🎯 Tạo QR
-                        </button>
-                        ${asset.last_checked ? `
-                            <small style="display: block; margin-top: 0.5rem; color: #6b7280;">
-                                Kiểm kê: ${new Date(asset.last_checked).toLocaleString('vi-VN')}<br>
-                                Bởi: ${asset.checked_by || 'N/A'}
-                            </small>
-                        ` : ''}
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function searchAssets() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
-
-            if (!searchTerm) {
-                displayAssets();
-                return;
-            }
-
-            const filtered = assets.filter(asset => {
-                return Object.values(asset).some(value =>
-                    value && value.toString().toLowerCase().includes(searchTerm)
-                );
-            });
-
-            displayAssets(filtered);
-        }
-
-        function updateDashboard() {
-            const total = assets.length;
-            const checked = assets.filter(asset => asset.last_checked).length;
-            const unchecked = total - checked;
-            const progress = total > 0 ? Math.round((checked / total) * 100) : 0;
-
-            document.getElementById('totalAssets').textContent = total.toLocaleString();
-            document.getElementById('checkedAssets').textContent = checked.toLocaleString();
-            document.getElementById('uncheckedAssets').textContent = unchecked.toLocaleString();
-            document.getElementById('progressPercent').textContent = progress + '%';
-        }
-
-        // ====================================
-        // QR CODE SCANNER
-        // ====================================
-
-        async function startScanning() {
-            try {
-                if (!scanner) {
-                    scanner = new Html5Qrcode("reader");
-                }
+                scanner = new Html5Qrcode("reader");
 
                 const cameras = await Html5Qrcode.getCameras();
                 if (cameras.length === 0) {
@@ -830,592 +849,464 @@
                         qrbox: {
                             width: 250,
                             height: 250
-                        }
+                        },
+                        aspectRatio: 1.0
                     },
-                    (decodedText) => {
-                        onQRScanned(decodedText);
-                    }
+                    onQRScanned,
+                    onScanError
                 );
 
                 isScanning = true;
-                document.getElementById('startScanBtn').classList.add('hidden');
-                document.getElementById('stopScanBtn').classList.remove('hidden');
-                document.getElementById('scannerAlert').classList.add('hidden');
-
-                showAlert('Đã bắt đầu quét QR code', 'success');
+                updateScanStatus();
 
             } catch (error) {
                 console.error('Scanner error:', error);
-                showAlert('Lỗi camera: ' + error.message, 'error');
-                document.getElementById('scannerAlert').classList.remove('hidden');
+                alert('Lỗi khởi tạo camera: ' + error.message);
             }
         }
 
-        async function stopScanning() {
-            if (scanner && isScanning) {
-                try {
-                    await scanner.stop();
-                    isScanning = false;
+        // QR Scan Success
+        function onQRScanned(decodedText) {
+            if (!isScanning) return;
 
-                    document.getElementById('startScanBtn').classList.remove('hidden');
-                    document.getElementById('stopScanBtn').classList.add('hidden');
+            // Play scan sound
+            playSuccessSound();
 
-                    showAlert('Đã dừng quét QR code', 'warning');
-                } catch (error) {
-                    console.error('Stop scanner error:', error);
-                }
+            // Show sound wave effect
+            showSoundWave();
+
+            // Vibrate if supported
+            if (navigator.vibrate) {
+                navigator.vibrate(100);
             }
-        }
 
-        function onQRScanned(qrData) {
-            // Stop scanning temporarily
-            stopScanning();
-
-            // Find asset by QR data
-            const assetCode = qrData.split('|')[0] || qrData;
-            const asset = assets.find(a => a.code === assetCode);
-
-            const resultDiv = document.getElementById('scanResult');
+            // Find asset
+            const asset = findAssetByCode(decodedText);
 
             if (asset) {
-                resultDiv.innerHTML = `
-                    <div class="qr-result success">
-                        <h3>✅ Quét thành công!</h3>
-                        <div class="asset-info">
-                            <div><strong>Mã tài sản:</strong> ${asset.code}</div>
-                            <div><strong>Tên:</strong> ${asset.name_vi || asset.name_en || 'N/A'}</div>
-                            <div><strong>Loại:</strong> ${asset.category || 'N/A'}</div>
-                            <div><strong>Model:</strong> ${asset.model || 'N/A'}</div>
-                            <div><strong>Vị trí:</strong> ${asset.location || 'N/A'}</div>
-                            <div><strong>Serial:</strong> ${asset.serial || 'N/A'}</div>
-                            <div><strong>Trạng thái:</strong> 
-                                <span style="color: ${asset.last_checked ? '#059669' : '#d97706'};">
-                                    ${asset.last_checked ? '✅ Đã kiểm kê' : '⏳ Chưa kiểm kê'}
-                                </span>
-                            </div>
-                        </div>
-                        <div style="margin-top: 1rem;">
-                            <button class="btn btn-success" onclick="confirmInventory('${asset.code}')">
-                                ✅ Xác nhận kiểm kê
-                            </button>
-                            <button class="btn btn-primary" onclick="startScanning()">
-                                🔄 Tiếp tục quét
-                            </button>
-                        </div>
-                    </div>
-                `;
-                resultDiv.classList.remove('hidden');
+                showAssetResult(asset);
             } else {
-                resultDiv.innerHTML = `
-                    <div class="qr-result">
-                        <h3>⚠️ Không tìm thấy tài sản</h3>
-                        <p>Mã QR: <strong>${qrData}</strong></p>
-                        <p>Không tìm thấy tài sản với mã này trong hệ thống.</p>
-                        <button class="btn btn-primary" onclick="startScanning()">
-                            🔄 Quét lại
-                        </button>
-                    </div>
-                `;
-                resultDiv.classList.remove('hidden');
-
-                // Auto restart scanning after 3 seconds
-                setTimeout(() => {
-                    startScanning();
-                }, 3000);
+                showNotFoundResult(decodedText);
             }
         }
 
-        async function confirmInventory(assetCode) {
-            if (!currentUser.name) {
-                showAlert('Vui lòng cấu hình thông tin người dùng trong Cài đặt', 'warning');
-                showPage('settings');
-                return;
+        // QR Scan Error (silent)
+        function onScanError(errorMessage) {
+            // Silent handling for continuous scanning
+        }
+
+        // Find Asset by Code
+        function findAssetByCode(code) {
+            const codeIndex = headers.indexOf('Code');
+            return assets.find(asset => asset[codeIndex] === code);
+        }
+
+        // Show Asset Result
+        function showAssetResult(asset) {
+            currentAsset = asset;
+
+            const codeIndex = headers.indexOf('Code');
+            const nameIndex = headers.indexOf('Tên tài sản Tiếng Việt');
+            const checkedIndex = headers.indexOf('Check kiểm kê');
+            const locationIndex = headers.indexOf('Vị trí');
+            const modelIndex = headers.indexOf('Model');
+            const serialIndex = headers.indexOf('Serial');
+
+            const code = asset[codeIndex] || 'N/A';
+            const name = asset[nameIndex] || 'Không có tên';
+            const isChecked = asset[checkedIndex] === true;
+            const location = asset[locationIndex] || 'N/A';
+            const model = asset[modelIndex] || 'N/A';
+            const serial = asset[serialIndex] || 'N/A';
+
+            // Update result display
+            elements.resultCode.textContent = code;
+            elements.resultName.textContent = name;
+
+            // Update status badge
+            if (isChecked) {
+                elements.resultStatus.className = 'status-badge checked';
+                elements.resultStatus.innerHTML = '<i class="fas fa-check-circle"></i> Đã kiểm kê';
+                elements.quickCheckBtn.innerHTML = '<i class="fas fa-redo"></i> Kiểm kê lại';
+            } else {
+                elements.resultStatus.className = 'status-badge unchecked';
+                elements.resultStatus.innerHTML = '<i class="fas fa-clock"></i> Chưa kiểm kê';
+                elements.quickCheckBtn.innerHTML = '<i class="fas fa-check"></i> Xác nhận KK';
             }
 
-            if (!settings.apiUrl) {
-                showAlert('Vui lòng cấu hình Google Apps Script URL trong Cài đặt', 'warning');
-                showPage('settings');
-                return;
-            }
+            // Update quick info
+            elements.quickInfo.innerHTML = `
+                <div class="info-item">
+                    <div class="info-label">Vị trí</div>
+                    <div class="info-value">${location}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Model</div>
+                    <div class="info-value">${model}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Serial</div>
+                    <div class="info-value">${serial}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Trạng thái</div>
+                    <div class="info-value">${isChecked ? 'Đã kiểm kê' : 'Chưa kiểm kê'}</div>
+                </div>
+            `;
+
+            // Fill edit form
+            elements.assetLocation.value = location;
+
+            // Show result modal
+            elements.quickResult.classList.add('show');
+        }
+
+        // Show Not Found Result
+        function showNotFoundResult(code) {
+            elements.resultCode.textContent = code;
+            elements.resultName.textContent = 'Không tìm thấy tài sản';
+            elements.resultStatus.className = 'status-badge unchecked';
+            elements.resultStatus.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Không tồn tại';
+
+            elements.quickInfo.innerHTML = `
+                <div class="info-item" style="grid-column: 1/-1; text-align: center; color: #dc3545;">
+                    <div class="info-value">Mã tài sản không có trong hệ thống</div>
+                </div>
+            `;
+
+            // Hide action buttons except continue
+            elements.quickCheckBtn.style.display = 'none';
+            elements.editBtn.style.display = 'none';
+
+            elements.quickResult.classList.add('show');
+
+            // Auto close after 2 seconds
+            setTimeout(() => {
+                closeResult();
+            }, 2000);
+        }
+
+        // Quick Check Asset
+        async function quickCheckAsset() {
+            if (!currentAsset) return;
 
             try {
-                const inventoryData = {
-                    assetCode: assetCode,
-                    checkedBy: currentUser.name,
-                    department: currentUser.department,
-                    location: currentUser.location,
-                    timestamp: new Date().toISOString(),
-                    notes: 'Kiểm kê bằng QR Scanner'
-                };
+                showLoading('Đang lưu kiểm kê...');
 
-                const response = await fetch(settings.apiUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        action: 'updateInventory',
-                        data: inventoryData
-                    })
-                });
+                // Update asset in local data
+                const checkedIndex = headers.indexOf('Check kiểm kê');
+                const timeIndex = headers.indexOf('Thời gian kiểm kê');
+                const userIndex = headers.indexOf('Người kiểm kê');
 
-                const result = await response.json();
+                currentAsset[checkedIndex] = true;
+                currentAsset[timeIndex] = new Date().toISOString();
+                currentAsset[userIndex] = 'Scanner User';
 
-                if (result.success) {
-                    // Update local asset data
-                    const asset = assets.find(a => a.code === assetCode);
-                    if (asset) {
-                        asset.last_checked = inventoryData.timestamp;
-                        asset.checked_by = inventoryData.checkedBy;
-                        asset.inventory_notes = inventoryData.notes;
-                    }
+                // Send to server
+                await updateAssetOnServer(currentAsset);
 
-                    showAlert('✅ Đã cập nhật kiểm kê thành công!', 'success');
-                    updateDashboard();
+                hideLoading();
+                showSuccessAnimation();
+                updateStats();
 
-                    // Auto continue scanning after 2 seconds
-                    setTimeout(() => {
-                        document.getElementById('scanResult').classList.add('hidden');
-                        startScanning();
-                    }, 2000);
-                } else {
-                    showAlert('❌ Lỗi cập nhật kiểm kê: ' + (result.error || 'Lỗi không xác định'), 'error');
-                }
+                // Auto continue scanning
+                setTimeout(() => {
+                    closeResult();
+                    continueScan();
+                }, 1500);
+
             } catch (error) {
-                showAlert('❌ Lỗi kết nối: ' + error.message, 'error');
+                hideLoading();
+                alert('Lỗi lưu dữ liệu: ' + error.message);
             }
         }
 
-        // ====================================
-        // QR CODE GENERATOR
-        // ====================================
+        // Save Edit
+        async function saveEdit() {
+            if (!currentAsset) return;
 
-        function generateSingleQR() {
-            const assetCode = document.getElementById('assetCodeInput').value.trim();
-            if (!assetCode) {
-                showAlert('Vui lòng nhập mã tài sản', 'warning');
-                return;
-            }
+            try {
+                showLoading('Đang lưu thay đổi...');
 
-            const asset = assets.find(a => a.code === assetCode);
-            if (!asset) {
-                showAlert('Không tìm thấy tài sản với mã: ' + assetCode, 'error');
-                return;
-            }
+                // Update asset data
+                const checkedIndex = headers.indexOf('Check kiểm kê');
+                const timeIndex = headers.indexOf('Thời gian kiểm kê');
+                const userIndex = headers.indexOf('Người kiểm kê');
+                const locationIndex = headers.indexOf('Vị trí');
+                const notesIndex = headers.indexOf('Ghi chú');
 
-            generateQRForAsset(assetCode);
-        }
-
-        function generateQRForAsset(assetCode) {
-            const asset = assets.find(a => a.code === assetCode);
-            if (!asset) {
-                showAlert('Không tìm thấy tài sản với mã: ' + assetCode, 'error');
-                return;
-            }
-
-            const resultDiv = document.getElementById('qrResult');
-            resultDiv.innerHTML = `
-                <h3>🎯 QR Code - ${assetCode}</h3>
-                <div id="qrcode-${assetCode}" style="margin: 1rem auto;"></div>
-                <p style="margin: 1rem 0; color: #6b7280;">${asset.name_vi || asset.name_en || 'Không có tên'}</p>
-                <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-                    <button class="btn btn-primary" onclick="downloadQR('${assetCode}')">
-                        📥 Tải xuống
-                    </button>
-                    <button class="btn btn-success" onclick="printQR('${assetCode}')">
-                        🖨️ In QR
-                    </button>
-                </div>
-            `;
-
-            resultDiv.classList.remove('hidden');
-
-            // Generate QR code
-            const qrData = `${asset.code}|${asset.name_vi || asset.name_en || ''}|${asset.location || ''}`;
-
-            QRCode.toCanvas(
-                document.getElementById(`qrcode-${assetCode}`),
-                qrData, {
-                    width: settings.qrSize || 256,
-                    height: settings.qrSize || 256,
-                    colorDark: '#000000',
-                    colorLight: '#ffffff'
-                },
-                function (error) {
-                    if (error) {
-                        console.error('QR generation error:', error);
-                        showAlert('Lỗi tạo QR code: ' + error.message, 'error');
-                    }
-                }
-            );
-        }
-
-        async function generateAllQR() {
-            if (assets.length === 0) {
-                showAlert('Không có dữ liệu tài sản để tạo QR', 'warning');
-                return;
-            }
-
-            const progressDiv = document.getElementById('qrProgress');
-            const progressText = document.getElementById('progressText');
-
-            progressDiv.classList.remove('hidden');
-
-            let qrDataCollection = [];
-
-            for (let i = 0; i < assets.length; i++) {
-                const asset = assets[i];
-                progressText.textContent = `${i + 1}/${assets.length}`;
-
-                try {
-                    const qrData = `${asset.code}|${asset.name_vi || asset.name_en || ''}|${asset.location || ''}`;
-
-                    // Generate QR as data URL
-                    const qrCanvas = document.createElement('canvas');
-                    await new Promise((resolve, reject) => {
-                        QRCode.toCanvas(qrCanvas, qrData, {
-                            width: 200,
-                            height: 200,
-                            colorDark: '#000000',
-                            colorLight: '#ffffff'
-                        }, (error) => {
-                            if (error) reject(error);
-                            else resolve();
-                        });
-                    });
-
-                    qrDataCollection.push({
-                        asset: asset,
-                        qrDataUrl: qrCanvas.toDataURL()
-                    });
-
-                } catch (error) {
-                    console.error(`Error generating QR for ${asset.code}:`, error);
+                currentAsset[checkedIndex] = true;
+                currentAsset[timeIndex] = new Date().toISOString();
+                currentAsset[userIndex] = 'Scanner User';
+                currentAsset[locationIndex] = elements.assetLocation.value;
+                if (notesIndex !== -1) {
+                    currentAsset[notesIndex] = elements.assetNotes.value;
                 }
 
-                // Small delay to prevent blocking
-                if (i % 10 === 0) {
-                    await new Promise(resolve => setTimeout(resolve, 50));
-                }
+                await updateAssetOnServer(currentAsset);
+
+                hideLoading();
+                showSuccessAnimation();
+                updateStats();
+
+                // Auto continue scanning
+                setTimeout(() => {
+                    closeResult();
+                    continueScan();
+                }, 1500);
+
+            } catch (error) {
+                hideLoading();
+                alert('Lỗi lưu dữ liệu: ' + error.message);
             }
-
-            progressDiv.classList.add('hidden');
-
-            // Create download link for all QR codes
-            createQRDownloadLink(qrDataCollection);
-
-            showAlert(`✅ Đã tạo thành công ${qrDataCollection.length} QR code!`, 'success');
         }
 
-        function createQRDownloadLink(qrDataCollection) {
-            const resultDiv = document.getElementById('qrResult');
+        // Update Asset on Server
+        async function updateAssetOnServer(asset) {
+            // Mock API call - replace with actual implementation
+            return new Promise((resolve) => {
+                setTimeout(resolve, 500);
+            });
+        }
 
-            // Create a simple HTML page with all QR codes
-            let htmlContent = `
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <title>QR Codes - All Assets</title>
-                    <style>
-                        body { font-family: Arial, sans-serif; margin: 20px; }
-                        .qr-container { display: inline-block; margin: 10px; padding: 10px; border: 1px solid #ccc; text-align: center; }
-                        .qr-container img { display: block; margin: 0 auto 10px; }
-                        .asset-info { font-size: 12px; max-width: 200px; }
-                        @media print { .qr-container { page-break-inside: avoid; } }
-                    </style>
-                </head>
-                <body>
-                    <h1>QR Codes - Asset Management</h1>
-                    <p>Tổng số: ${qrDataCollection.length} QR codes</p>
-            `;
+        // Show Success Animation
+        function showSuccessAnimation() {
+            elements.successOverlay.style.display = 'flex';
+            setTimeout(() => {
+                elements.successOverlay.style.display = 'none';
+            }, 1500);
+        }
 
-            qrDataCollection.forEach(item => {
-                htmlContent += `
-                    <div class="qr-container">
-                        <img src="${item.qrDataUrl}" alt="QR ${item.asset.code}">
-                        <div class="asset-info">
-                            <strong>${item.asset.code}</strong><br>
-                            ${item.asset.name_vi || item.asset.name_en || ''}<br>
-                            ${item.asset.location || ''}
-                        </div>
-                    </div>
-                `;
+        // Show/Hide Loading
+        function showLoading(text = 'Đang xử lý...') {
+            // Implementation for loading state
+        }
+
+        function hideLoading() {
+            // Implementation for hiding loading state
+        }
+
+        // Play Success Sound
+        function playSuccessSound() {
+            // Create audio context for beep sound
+            try {
+                const audioContext = new(window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+
+                oscillator.frequency.value = 800;
+                oscillator.type = 'sine';
+
+                gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+                gainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.1);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.3);
+            } catch (error) {
+                console.log('Audio not available');
+            }
+        }
+
+        // Show Sound Wave Effect
+        function showSoundWave() {
+            elements.soundWave.style.display = 'block';
+            setTimeout(() => {
+                elements.soundWave.style.display = 'none';
+            }, 1000);
+        }
+
+        // Update Stats
+        function updateStats() {
+            const total = assets.length;
+            const checkedIndex = headers.indexOf('Check kiểm kê');
+            const checked = assets.filter(asset => asset[checkedIndex] === true).length;
+            const progress = total > 0 ? Math.round((checked / total) * 100) : 0;
+
+            elements.totalCount.textContent = total;
+            elements.checkedCount.textContent = checked;
+            elements.progressPercent.textContent = progress + '%';
+        }
+
+        // Close Result Modal
+        function closeResult() {
+            elements.quickResult.classList.remove('show');
+            elements.editForm.classList.remove('show');
+
+            // Reset button visibility
+            elements.quickCheckBtn.style.display = 'block';
+            elements.editBtn.style.display = 'block';
+        }
+
+        // Continue Scan
+        function continueScan() {
+            if (!isScanning && scanner) {
+                // Resume scanning if paused
+                isScanning = true;
+                updateScanStatus();
+            }
+        }
+
+        // Pause/Resume Scanning
+        function togglePause() {
+            if (isScanning) {
+                isScanning = false;
+                elements.pauseBtn.style.display = 'none';
+                elements.continueBtn.style.display = 'block';
+            } else {
+                isScanning = true;
+                elements.pauseBtn.style.display = 'block';
+                elements.continueBtn.style.display = 'none';
+            }
+            updateScanStatus();
+        }
+
+        // Update Scan Status
+        function updateScanStatus() {
+            // Visual feedback for scan status
+        }
+
+        // Toggle Manual Input
+        function toggleManualInput() {
+            const isVisible = elements.manualInput.classList.contains('show');
+
+            if (isVisible) {
+                elements.manualInput.classList.remove('show');
+                elements.manualCode.blur();
+            } else {
+                elements.manualInput.classList.add('show');
+                elements.manualCode.focus();
+            }
+        }
+
+        // Handle Manual Input
+        function handleManualInput() {
+            const code = elements.manualCode.value.trim();
+            if (code) {
+                onQRScanned(code);
+                elements.manualCode.value = '';
+                elements.manualInput.classList.remove('show');
+            }
+        }
+
+        // Load Demo Data
+        function loadDemoData() {
+            headers = ['Code', 'Tên tài sản Tiếng Việt', 'Model', 'Serial', 'Vị trí', 'Check kiểm kê',
+                'Thời gian kiểm kê', 'Người kiểm kê', 'Ghi chú'
+            ];
+
+            assets = [
+                ['TS001', 'Máy tính Dell OptiPlex', 'OptiPlex 7090', 'DL001234', 'Phòng IT', false, '', '', ''],
+                ['TS002', 'Máy in HP LaserJet', 'LaserJet Pro M404n', 'HP567890', 'Phòng hành chính', true,
+                    '2024-01-15', 'Admin', 'Hoạt động tốt'
+                ],
+                ['TS003', 'Bàn làm việc', 'Office Desk 120x60', 'DESK001', 'Phòng kế toán', false, '', '', ''],
+                ['HT001', 'Hệ thống điều hòa', 'Daikin Inverter', 'AC2024001', 'Tầng 1', false, '', '', ''],
+                ['TS004', 'Ghế xoay văn phòng', 'Executive Chair', 'CHAIR001', 'Phòng giám đốc', true, '2024-01-10',
+                    'Manager', ''
+                ]
+            ];
+
+            updateStats();
+        }
+
+        // Event Listeners
+        document.addEventListener('DOMContentLoaded', function () {
+            // Initialize demo data
+            loadDemoData();
+
+            // Initialize scanner
+            initScanner();
+
+            // Button event listeners
+            elements.quickCheckBtn.addEventListener('click', quickCheckAsset);
+            elements.editBtn.addEventListener('click', function () {
+                elements.editForm.classList.add('show');
+            });
+            elements.continueQRBtn.addEventListener('click', function () {
+                closeResult();
+                continueScan();
+            });
+            elements.closeResult.addEventListener('click', closeResult);
+
+            elements.saveEditBtn.addEventListener('click', saveEdit);
+            elements.cancelEditBtn.addEventListener('click', function () {
+                elements.editForm.classList.remove('show');
             });
 
-            htmlContent += '</body></html>';
+            elements.manualBtn.addEventListener('click', toggleManualInput);
+            elements.pauseBtn.addEventListener('click', togglePause);
+            elements.continueBtn.addEventListener('click', togglePause);
 
-            // Create download link
-            const blob = new Blob([htmlContent], {
-                type: 'text/html'
+            // Manual input enter key
+            elements.manualCode.addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    handleManualInput();
+                }
             });
-            const url = URL.createObjectURL(blob);
 
-            resultDiv.innerHTML = `
-                <h3>✅ QR Codes đã tạo xong!</h3>
-                <p>Đã tạo ${qrDataCollection.length} QR codes</p>
-                <div style="margin: 1rem 0;">
-                    <a href="${url}" download="QR_Codes_All_Assets.html" class="btn btn-primary">
-                        📥 Tải file HTML
-                    </a>
-                    <button class="btn btn-success" onclick="window.open('${url}', '_blank')">
-                        👁️ Xem trước & In
-                    </button>
-                </div>
-            `;
+            // Close modal on background click
+            elements.quickResult.addEventListener('click', function (e) {
+                if (e.target === elements.quickResult) {
+                    closeResult();
+                }
+            });
 
-            resultDiv.classList.remove('hidden');
-        }
+            // Navigation tabs
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.addEventListener('click', function () {
+                    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove(
+                        'active'));
+                    this.classList.add('active');
 
-        function downloadQR(assetCode) {
-            const canvas = document.querySelector(`#qrcode-${assetCode} canvas`);
-            if (!canvas) return;
+                    const mode = this.dataset.mode;
+                    // Handle different modes (scan, list, stats)
+                });
+            });
 
-            const link = document.createElement('a');
-            link.download = `QR_${assetCode}.png`;
-            link.href = canvas.toDataURL();
-            link.click();
+            // Keyboard shortcuts
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') {
+                    closeResult();
+                    elements.manualInput.classList.remove('show');
+                }
 
-            showAlert(`📥 Đã tải QR code cho ${assetCode}`, 'success');
-        }
+                if (e.key === ' ' && !elements.manualInput.classList.contains('show')) {
+                    e.preventDefault();
+                    togglePause();
+                }
 
-        function printQR(assetCode) {
-            const canvas = document.querySelector(`#qrcode-${assetCode} canvas`);
-            if (!canvas) return;
+                if (e.key === 'm' && !elements.manualInput.classList.contains('show')) {
+                    e.preventDefault();
+                    toggleManualInput();
+                }
+            });
+        });
 
-            const asset = assets.find(a => a.code === assetCode);
+        // Prevent zoom on double tap
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function (event) {
+            const now = (new Date()).getTime();
+            if (now - lastTouchEnd <= 300) {
+                event.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
 
-            const printWindow = window.open('', '_blank');
-            printWindow.document.write(`
-                <html>
-                    <head>
-                        <title>Print QR Code - ${assetCode}</title>
-                        <style>
-                            body { font-family: Arial, sans-serif; text-align: center; margin: 20px; }
-                            .qr-container { border: 2px solid #000; padding: 20px; display: inline-block; }
-                            .asset-info { margin-top: 10px; font-size: 14px; }
-                        </style>
-                    </head>
-                    <body>
-                        <div class="qr-container">
-                            <img src="${canvas.toDataURL()}" alt="QR Code ${assetCode}">
-                            <div class="asset-info">
-                                <strong>${assetCode}</strong><br>
-                                ${asset ? asset.name_vi || asset.name_en || '' : ''}<br>
-                                ${asset ? asset.location || '' : ''}
-                            </div>
-                        </div>
-                        <script>window.print(); window.close();
+        // Handle orientation change
+        window.addEventListener('orientationchange', function () {
+            setTimeout(() => {
+                if (scanner && isScanning) {
+                    scanner.stop().then(() => {
+                        initScanner();
+                    });
+                }
+            }, 500);
+        });
     </script>
-</body>
-
-</html>
-`);
-
-printWindow.document.close();
-}
-
-// ====================================
-// DATA MANAGEMENT
-// ====================================
-
-function exportData() {
-if (assets.length === 0) {
-showAlert('Không có dữ liệu để export', 'warning');
-return;
-}
-
-// Create CSV content
-const csvHeaders = [
-'Mã tài sản', 'Tên (Tiếng Việt)', 'Tên (English)', 'Loại', 'Model',
-'Serial', 'Vị trí', 'Giá trị', 'Trạng thái kiểm kê',
-'Người kiểm kê', 'Thời gian kiểm kê', 'Ghi chú'
-];
-
-const csvData = assets.map(asset => [
-asset.code || '',
-asset.name_vi || '',
-asset.name_en || '',
-asset.category || '',
-asset.model || '',
-asset.serial || '',
-asset.location || '',
-asset.value || '',
-asset.last_checked ? 'Đã kiểm kê' : 'Chưa kiểm kê',
-asset.checked_by || '',
-asset.last_checked ? new Date(asset.last_checked).toLocaleString('vi-VN') : '',
-asset.inventory_notes || ''
-]);
-
-const csvContent = [csvHeaders, ...csvData]
-.map(row => row.map(cell => `"${cell}"`).join(','))
-.join('\n');
-
-// Add BOM for UTF-8
-const BOM = '\uFEFF';
-const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
-
-const link = document.createElement('a');
-link.href = URL.createObjectURL(blob);
-link.download = `Asset_Export_${new Date().toISOString().split('T')[0]}.csv`;
-link.click();
-
-showAlert('📤 Đã export dữ liệu thành công!', 'success');
-}
-
-async function resetInventory() {
-if (!confirm('Bạn có chắc chắn muốn reset toàn bộ dữ liệu kiểm kê? Hành động này không thể hoàn tác.')) {
-return;
-}
-
-if (!settings.apiUrl) {
-showAlert('Vui lòng cấu hình Google Apps Script URL trong Cài đặt', 'warning');
-return;
-}
-
-try {
-const response = await fetch(settings.apiUrl, {
-method: 'POST',
-headers: {
-'Content-Type': 'application/json',
-},
-body: JSON.stringify({
-action: 'resetInventory',
-resetBy: currentUser.name || 'System',
-timestamp: new Date().toISOString()
-})
-});
-
-const result = await response.json();
-
-if (result.success) {
-// Clear local inventory data
-assets.forEach(asset => {
-asset.last_checked = null;
-asset.checked_by = null;
-asset.inventory_notes = null;
-});
-
-updateDashboard();
-displayAssets();
-
-showAlert('🔄 Đã reset dữ liệu kiểm kê thành công!', 'success');
-} else {
-showAlert('❌ Lỗi reset kiểm kê: ' + (result.error || 'Lỗi không xác định'), 'error');
-}
-} catch (error) {
-showAlert('❌ Lỗi kết nối: ' + error.message, 'error');
-}
-}
-
-function clearAllData() {
-if (!confirm('Bạn có chắc chắn muốn xóa toàn bộ dữ liệu cục bộ? Hành động này không thể hoàn tác.')) {
-return;
-}
-
-localStorage.clear();
-sessionStorage.clear();
-
-// Reset variables
-assets = [];
-settings = { apiUrl: '', qrSize: 256 };
-currentUser = { name: '', department: '', location: '' };
-
-// Reset UI
-updateDashboard();
-displayAssets();
-loadSettings();
-
-showAlert('🗑️ Đã xóa toàn bộ dữ liệu cục bộ!', 'success');
-}
-
-// ====================================
-// UTILITY FUNCTIONS
-// ====================================
-
-function showAlert(message, type = 'success') {
-// Remove existing alerts
-const existingAlert = document.querySelector('.alert-floating');
-if (existingAlert) {
-existingAlert.remove();
-}
-
-const alert = document.createElement('div');
-alert.className = `alert alert-${type} alert-floating`;
-alert.style.cssText = `
-position: fixed;
-top: 20px;
-right: 20px;
-z-index: 10000;
-max-width: 350px;
-box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-border-radius: 0.5rem;
-`;
-
-alert.innerHTML = `
-<div style="display: flex; justify-content: space-between; align-items: flex-start;">
-    <span>${message}</span>
-    <button onclick="this.parentElement.parentElement.remove()"
-        style="background: none; border: none; font-size: 1.2rem; cursor: pointer; padding: 0; margin-left: 1rem; opacity: 0.7;">×</button>
-</div>
-`;
-
-document.body.appendChild(alert);
-
-// Auto remove after 5 seconds
-setTimeout(() => {
-if (alert.parentElement) {
-alert.remove();
-}
-}, 5000);
-}
-
-// ====================================
-// INITIALIZATION
-// ====================================
-
-document.addEventListener('DOMContentLoaded', function() {
-console.log('Asset Manager initialized');
-loadSettings();
-updateDashboard();
-
-// Load demo data if no API configured
-if (!settings.apiUrl) {
-showAlert('👋 Chào mừng! Vui lòng cấu hình Google Apps Script trong phần Cài đặt để bắt đầu.', 'warning');
-}
-
-// Register service worker for PWA
-if ('serviceWorker' in navigator) {
-navigator.serviceWorker.register('sw.js').then(function(registration) {
-console.log('Service Worker registered successfully:', registration.scope);
-}).catch(function(error) {
-console.log('Service Worker registration failed:', error);
-});
-}
-});
-
-// Prevent back button from breaking scanner
-window.addEventListener('beforeunload', function() {
-if (scanner && isScanning) {
-stopScanning();
-}
-});
-
-// Handle keyboard shortcuts
-document.addEventListener('keydown', function(e) {
-// Escape key to stop scanning
-if (e.key === 'Escape' && isScanning) {
-stopScanning();
-}
-
-// Ctrl/Cmd + S to save settings
-if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-e.preventDefault();
-if (document.getElementById('settings').classList.contains('active')) {
-saveSettings();
-}
-}
-});
-</script>
 </body>
 
 </html>
