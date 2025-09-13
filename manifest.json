@@ -1,83 +1,32 @@
 {
-  "name": "Asset Scanner Pro - Quét QR Liên Tục",
-  "short_name": "Asset Scanner",
-  "description": "Hệ thống quét QR tài sản chuyên nghiệp với tốc độ cao",
+  "name": "QR Asset Manager Pro",
+  "short_name": "AssetQR",
+  "description": "Hệ thống quản lý tài sản thông minh với QR Code",
   "start_url": "/",
-  "display": "fullscreen",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1e40af",
   "orientation": "portrait",
-  "background_color": "#000000",
-  "theme_color": "#00ff88",
-  "scope": "/",
-  "lang": "vi",
-  "dir": "ltr",
-  "categories": ["business", "productivity", "utilities"],
-  
   "icons": [
     {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192' fill='%2300ff88'><rect width='192' height='192' rx='48' fill='%23000'/><path d='M48 48h32v32H48zm0 48h16v16H48zm32 0h16v16H80zm-32 32h16v16H48zm32 0h16v16H80zm48-80h32v32h-32zm0 48h16v16h-16zm32 0h16v16h-16zm-32 32h16v16h-16zm32 0h16v16h-16zm-96 32h32v32H32zm0-32h16v16H32zm32 0h16v16H48z'/></svg>",
+      "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mN88OjpfwAI+QOoF8YQhwAAAABJRU5ErkJggg==",
       "sizes": "192x192",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512' fill='%2300ff88'><rect width='512' height='512' rx='128' fill='%23000'/><path d='M128 128h85v85h-85zm0 128h42v42h-42zm85 0h42v42h-42zm-85 85h42v42h-42zm85 0h42v42h-42zm128-213h85v85h-85zm0 128h42v42h-42zm85 0h42v42h-42zm-85 85h42v42h-42zm85 0h42v42h-42zm-256 85h85v85H85zm0-85h42v42H85zm85 0h42v42h-42z'/></svg>",
+      "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mN88OjpfwAI+QOoF8YQhwAAAABJRU5ErkJggg==",
       "sizes": "512x512",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "purpose": "any maskable"
     }
   ],
-  
+  "categories": ["business", "productivity"],
   "screenshots": [
     {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 390 844'><rect width='390' height='844' fill='%23000'/><rect x='20' y='120' width='350' height='350' fill='%23111' rx='20'/><circle cx='195' cy='295' r='100' fill='none' stroke='%2300ff88' stroke-width='3'/><text x='195' y='500' text-anchor='middle' fill='%23fff' font-size='18'>Quét QR Code</text></svg>",
-      "sizes": "390x844",
-      "type": "image/svg+xml",
-      "form_factor": "narrow",
-      "label": "Giao diện quét QR chính"
-    }
-  ],
-  
-  "shortcuts": [
-    {
-      "name": "Quét QR nhanh",
-      "short_name": "Quét QR",
-      "description": "Mở camera và bắt đầu quét QR ngay lập tức",
-      "url": "/?mode=scan",
-      "icons": [
-        {
-          "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2300ff88'><path d='M3 3h6v6H3V3zm2 2v2h2V5H5zM3 15h6v6H3v-6zm2 2v2h2v-2H5zM15 3h6v6h-6V3zm2 2v2h2V5h-2z'/></svg>",
-          "sizes": "24x24",
-          "type": "image/svg+xml"
-        }
-      ]
-    },
-    {
-      "name": "Xem danh sách",
-      "short_name": "Danh sách", 
-      "description": "Xem danh sách tài sản đã kiểm kê",
-      "url": "/?mode=list",
-      "icons": [
-        {
-          "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2300ff88'><path d='M3 3h18v2H3V3zm0 4h18v2H3V7zm0 4h18v2H3v-2zm0 4h18v2H3v-2z'/></svg>",
-          "sizes": "24x24", 
-          "type": "image/svg+xml"
-        }
-      ]
-    }
-  ],
-  
-  "related_applications": [],
-  "prefer_related_applications": false,
-  "display_override": ["fullscreen", "standalone", "minimal-ui"],
-  
-  "edge_side_panel": {
-    "preferred_width": 400
-  },
-  
-  "protocol_handlers": [
-    {
-      "protocol": "web+assetscanner",
-      "url": "/?code=%s"
+      "src": "screenshot1.jpg",
+      "sizes": "1280x720",
+      "type": "image/jpeg"
     }
   ]
 }
